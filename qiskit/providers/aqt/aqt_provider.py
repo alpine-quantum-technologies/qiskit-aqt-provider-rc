@@ -15,7 +15,7 @@
 
 from qiskit.providers.providerutils import filter_backends
 
-from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDevice
+from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDevice, AQTDeviceIbex
 
 
 class AQTProvider():
@@ -29,7 +29,8 @@ class AQTProvider():
         # Populate the list of AQT backends
         self.backends = BackendService([AQTSimulator(provider=self),
                                         AQTSimulatorNoise1(provider=self),
-                                        AQTDevice(provider=self)])
+                                        AQTDevice(provider=self),
+                                        AQTDeviceIbex(provider=self)])
 
     def __str__(self):
         return "<AQTProvider(name={})>".format(self.name)
