@@ -78,6 +78,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/jupyter_execute
 
 # PyBuilder
 target/
@@ -109,3 +110,5 @@ ENV/
 .ropeproject
 
 .DS_Store
+
+docs/stubs/

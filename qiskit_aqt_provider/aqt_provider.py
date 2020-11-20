@@ -14,12 +14,31 @@
 
 
 from qiskit.providers.providerutils import filter_backends
-
+from qiskit.providers.exceptions import QiskitBackendNotFoundError
 from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDevice, AQTDeviceIbex
 
 
 class AQTProvider():
-    """Provider for backends from Alpine Quantum Technologies (AQT)."""
+    """Provider for backends from Alpine Quantum Technologies (AQT).
+
+    Typical usage is:
+
+    .. code-block:: python
+
+        from qiskit_aqt_provider import AQTProvider
+
+        aqt = AQTProvider('MY_TOKEN')
+
+        backend = aqt.backends.aqt_qasm_simulator
+
+    where `'MY_TOKEN'` is the access token provided by AQT.
+
+    Attributes:
+        access_token (str): The access token.
+        name (str): Name of the provider instance.
+        backends (BackendService): A service instance that allows
+                                   for grabbing backends.
+    """
 
     def __init__(self, access_token):
         super().__init__()
@@ -37,6 +56,32 @@ class AQTProvider():
 
     def __repr__(self):
         return self.__str__()
+
+    def get_backend(self, name=None, **kwargs):
+        """Return a single backend matching the specified filtering.
+        Args:
+            name (str): name of the backend.
+            **kwargs: dict used for filtering.
+        Returns:
+            Backend: a backend matching the filtering.
+        Raises:
+            QiskitBackendNotFoundError: if no backend could be found or
+                more than one backend matches the filtering criteria.
+        """
+        backends = self.backends(name, **kwargs)
+        if len(backends) > 1:
+            raise QiskitBackendNotFoundError('More than one backend matches criteria.')
+        if not backends:
+            raise QiskitBackendNotFoundError('No backend matches criteria.')
+
+        return backends[0]
+
+    def __eq__(self, other):
+        """Equality comparison.
+        By default, it is assumed that two `Providers` from the same class are
+        equal. Subclassed providers can override this behavior.
+        """
+        return type(self).__name__ == type(other).__name__
 
 
 class BackendService():
