@@ -17,7 +17,6 @@
 import time
 
 import requests
-
 from qiskit.providers import JobV1
 from qiskit.providers import JobError
 from qiskit.providers import JobTimeoutError
@@ -77,6 +76,13 @@ class AQTJob(JobV1):
             return qu2cl
         qubit_map = {}
         count = 0
+
+        # If a list of quantum circuits use the first element
+        # since we only can have a maximum of a single
+        # circuit per job.
+        if isinstance(self.qobj, list):
+            self.qobj = self.qobj[0]
+
         for bit in self.qobj.qubits:
             qubit_map[bit] = count
             count += 1
@@ -145,7 +151,8 @@ class AQTJob(JobV1):
                     'shots': len(result['samples']),
                     'data': {'counts': self._format_counts(result['samples'])},
                     'header': {'memory_slots': self.qobj.num_clbits,
-                               'name': self.qobj.name}
+                               'name': self.qobj.name,
+                               'metadata': self.qobj.metadata}
                 }]
             qobj_id = id(self.qobj)
 
