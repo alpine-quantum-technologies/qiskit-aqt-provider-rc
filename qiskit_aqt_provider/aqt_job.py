@@ -132,7 +132,7 @@ class AQTJob(JobV1):
                     'data': {'counts': self._format_counts(result['samples'])},
                     'header': {'memory_slots': self.qobj.num_clbits,
                                'name': self.qobj.name,
-                               'metadata': self.qobj.metadata}}
+                               'metadata': self.qobj.metadata}
                 }]
             qobj_id = self.qobj.qobj_id
         else:
