@@ -1,4 +1,4 @@
-.. _qiskit-aqt-backends-device:
+.. _qiskit-aqt-backends-device-pine:
 
 =========================================
 qiskit_aqt_provider.aqt_backend
