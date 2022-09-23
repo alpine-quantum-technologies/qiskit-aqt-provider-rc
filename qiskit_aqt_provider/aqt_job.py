@@ -124,16 +124,28 @@ class AQTJob(JobV1):
             Result: Result object.
         """
         result = self._wait_for_result(timeout, wait)
-        results = [
-            {
-                'success': True,
-                'shots': len(result['samples']),
-                'data': {'counts': self._format_counts(result['samples'])},
-                'header': {'memory_slots': self.qobj.num_clbits,
-                           'name': self.qobj.name,
-                           'metadata': self.qobj.metadata}
-            }]
-        qobj_id = id(self.qobj)
+        if isinstance(self.qobj, QasmQobj):
+            results = [
+                {
+                    'success': True,
+                    'shots': len(result['samples']),
+                    'data': {'counts': self._format_counts(result['samples'])},
+                    'header': {'memory_slots': self.qobj.num_clbits,
+                               'name': self.qobj.name,
+                               'metadata': self.qobj.metadata}}
+                }]
+            qobj_id = self.qobj.qobj_id
+        else:
+            results = [
+                {
+                    'success': True,
+                    'shots': len(result['samples']),
+                    'data': {'counts': self._format_counts(result['samples'])},
+                    'header': {'memory_slots': self.qobj.num_clbits,
+                               'name': self.qobj.name,
+                               'metadata': self.qobj.metadata}
+                }]
+            qobj_id = id(self.qobj)
 
         return Result.from_dict({
             'results': results,
