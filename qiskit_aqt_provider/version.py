@@ -22,10 +22,10 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 def _minimal_ext_cmd(cmd):
     # construct minimal environment
     env = {}
-    for k in ['SYSTEMROOT', 'PATH']:
-        v = os.environ.get(k)
-        if v is not None:
-            env[k] = v
+    for var in ['SYSTEMROOT', 'PATH']:
+        version = os.environ.get(var)
+        if version is not None:
+            env[var] = version
     # LANGUAGE is used on win32
     env['LANGUAGE'] = 'C'
     env['LANG'] = 'C'
