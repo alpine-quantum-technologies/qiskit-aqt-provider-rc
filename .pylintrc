@@ -1,6 +1,29 @@
 [MASTER]
 
-disable = invalid-name, import-error, too-many-statements, too-many-locals, too-many-branches, too-many-arguments, eval-used, too-many-nested-blocks, too-many-public-methods, redefined-builtin, wildcard-import, function-redefined, unused-wildcard-import, duplicate-code, too-many-instance-attributes, too-few-public-methods, pointless-string-statement, no-name-in-module, no-self-use, arguments-differ, too-many-lines, missing-docstring, attribute-defined-outside-init, too-many-function-args
+disable =
+    arguments-differ,
+    attribute-defined-outside-init,
+    duplicate-code,
+    eval-used,
+    function-redefined,
+    import-error,
+    invalid-name,
+    missing-docstring,
+    no-name-in-module,
+    pointless-string-statement,
+    redefined-builtin,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-branches,
+    too-many-function-args,
+    too-many-instance-attributes,
+    too-many-lines,
+    too-many-locals,
+    too-many-nested-blocks,
+    too-many-public-methods,
+    too-many-statements,
+    unused-wildcard-import,
+    wildcard-import,
 
 extension-pkg-whitelist=numpy
 

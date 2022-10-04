@@ -30,13 +30,14 @@ def _minimal_ext_cmd(cmd):
     env['LANGUAGE'] = 'C'
     env['LANG'] = 'C'
     env['LC_ALL'] = 'C'
+    # pylint: disable-next=consider-using-with
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, env=env,
                             cwd=os.path.join(os.path.dirname(ROOT_DIR)))
     stdout, stderr = proc.communicate()
     if proc.returncode > 0:
-        raise OSError('Command {} exited with code {}: {}'.format(
-            cmd, proc.returncode, stderr.strip().decode('ascii')))
+        error_code = stderr.strip().decode('ascii')
+        raise OSError(f'Command {cmd} exited with code {proc.returncode}: {error_code}')
     return stdout
 
 
@@ -52,7 +53,7 @@ def git_version():
     return git_revision
 
 
-with open(os.path.join(ROOT_DIR, "VERSION.txt"), "r") as version_file:
+with open(os.path.join(ROOT_DIR, "VERSION.txt"), "r", encoding="utf8") as version_file:
     VERSION = version_file.read().strip()
 
 
