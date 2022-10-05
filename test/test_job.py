@@ -27,7 +27,7 @@ class _FakeJob():
         self.qobj = circuit
 
     def _build_memory_mapping(self):
-        return AQTJob._build_memory_mapping(self) # type: ignore[arg-type]
+        return AQTJob._build_memory_mapping(self)  # type: ignore[arg-type]
 
 
 class TestJobs(unittest.TestCase):
