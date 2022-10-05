@@ -203,10 +203,10 @@ class AQTSimulatorNoise1(Backend):
     def run(self, run_input, **options):
         if isinstance(run_input, qobj_mod.PulseQobj):
             raise QiskitError("Pulse jobs are not accepted")
-        for kwarg in options:
-            if kwarg != 'shots':
+        for option in options:
+            if option != 'shots':
                 warnings.warn(
-                    f"Option {kwarg} is not used by this backend",
+                    f"Option {option} is not used by this backend",
                     UserWarning, stacklevel=2)
         out_shots = options.get('shots', self.options.shots)
         if out_shots > self.configuration().max_shots:
