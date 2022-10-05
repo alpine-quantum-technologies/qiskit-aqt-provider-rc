@@ -33,7 +33,8 @@ def _minimal_ext_cmd(cmd):
     with subprocess.Popen(
         cmd, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, env=env,
-        cwd=os.path.join(os.path.dirname(ROOT_DIR))) as proc:
+        cwd=os.path.join(os.path.dirname(ROOT_DIR))
+    ) as proc:
         stdout, stderr = proc.communicate()
         if proc.returncode > 0:
             error_code = stderr.strip().decode('ascii')
