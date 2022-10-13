@@ -88,7 +88,7 @@ class AQTProvider():
         else:
             raise ValueError(f"Resource '{resource}' does not exist in workspace '{workspace}'.")
 
-        return AQTResource(self, api_workspace.get("id"), api_resource.get("id"))
+        return AQTResource(self, api_workspace.get("id"), api_resource)
 
     def get_backend(self, name=None, **kwargs):
         """Return a single backend matching the specified filtering.

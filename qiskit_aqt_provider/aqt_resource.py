@@ -12,8 +12,6 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-from math import pi
-
 from typing import TypedDict
 import warnings
 
@@ -29,14 +27,14 @@ from qiskit.transpiler import Target
 from qiskit.providers.models import BackendConfiguration
 from qiskit.exceptions import QiskitError
 
-from . import aqt_job
+from . import aqt_job_new
 from . import circuit_to_aqt
 
 
 class ApiResource(TypedDict):
     name: str
     id: str
-    type: str # Literal["simulator", "device"]
+    type: str  # Literal["simulator", "device"]
 
 
 class AQTResource(Backend):
@@ -78,7 +76,7 @@ class AQTResource(Backend):
         lam = Parameter('λ')
         self._target.add_instruction(RZGate(lam))
         self._target.add_instruction(RGate(theta, phi))
-        self._target.add_instruction(RXXGate(pi/2.0))
+        self._target.add_instruction(RXXGate(theta))  # (pi/2.0))
         self._target.add_instruction(Measure())
         self.options.set_validator("shots", (1, 200))
 
@@ -127,7 +125,7 @@ class AQTResource(Backend):
             run_input, shots=out_shots)
 
         res = requests.post(
-            f"{self.url}/{self._workspace}/{self._resource}",
+            f"{self.url}/submit/{self._workspace}/{self._resource['id']}",
             json=aqt_json,
             headers=self.headers,
         )
@@ -139,5 +137,6 @@ class AQTResource(Backend):
         job_id = api_job.get("job_id")
         if job_id is None:
             raise Exception("API Response does not contain field 'job'.'job_id'.")
-        job = aqt_job.AQTJob(self, job_id, qobj=run_input)
+        print(job_id)
+        job = aqt_job_new.AQTJobNew(self, job_id, qobj=run_input)
         return job

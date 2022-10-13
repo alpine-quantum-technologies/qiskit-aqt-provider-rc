@@ -73,13 +73,13 @@ def _experiment_to_aqt_circuit(circuit):
         inst = instruction[0]
         qubits = [qubit_map[bit] for bit in instruction[1]]
         if inst.name == 'rz':
-            ops.append({"gate": "RZ", "phi": inst.params[0] / pi, "qubit": qubits[0]})
+            ops.append({"gate": "RZ", "phi": float(inst.params[0]) / pi, "qubit": qubits[0]})
         elif inst.name == 'r':
             ops.append(
                 {
                     "gate": "R",
-                    "phi": inst.params[0] / pi,
-                    "theta": inst.params[1] / pi,
+                    "phi": float(inst.params[0]) / pi,
+                    "theta": float(inst.params[1]) / pi,
                     "qubit": qubits[0],
                 }
             )
