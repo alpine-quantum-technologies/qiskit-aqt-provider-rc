@@ -14,7 +14,7 @@
 
 from math import pi
 
-from typing import Literal, TypedDict
+from typing import TypedDict
 import warnings
 
 import requests
@@ -36,7 +36,7 @@ from . import circuit_to_aqt
 class ApiResource(TypedDict):
     name: str
     id: str
-    type: Literal["simulator", "device"]
+    type: str # Literal["simulator", "device"]
 
 
 class AQTResource(Backend):

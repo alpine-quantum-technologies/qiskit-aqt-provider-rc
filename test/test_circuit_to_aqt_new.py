@@ -31,9 +31,11 @@ class TestCircuitToAQTNew(unittest.TestCase):
         qc.measure(0, 0)
         aqt_json = circuit_to_aqt_new(qc)
         self.assertEqual(
-            {'job_type': 'quantum_circuit',
-              'label': None,
-              'payload': {'quantum_circuit': [], 'repetitions': 100}},
+            {
+                'job_type': 'quantum_circuit',
+                'label': None,
+                'payload': {'quantum_circuit': [], 'repetitions': 100}
+            },
             aqt_json
         )
 
