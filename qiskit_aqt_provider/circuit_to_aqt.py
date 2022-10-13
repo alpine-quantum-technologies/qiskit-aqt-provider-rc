@@ -60,6 +60,7 @@ def _experiment_to_seq(circuit):
         raise ValueError('Circuit must have at least one measurements.')
     return json.dumps(ops)
 
+
 def _experiment_to_aqt_circuit(circuit):
     count = 0
     qubit_map = {}
@@ -72,7 +73,7 @@ def _experiment_to_aqt_circuit(circuit):
         inst = instruction[0]
         qubits = [qubit_map[bit] for bit in instruction[1]]
         if inst.name == 'rz':
-            ops.append({"gate": "RZ", "phi": inst.params[0]/ pi, "qubit": qubits[0]})
+            ops.append({"gate": "RZ", "phi": inst.params[0] / pi, "qubit": qubits[0]})
         elif inst.name == 'r':
             ops.append(
                 {

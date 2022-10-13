@@ -31,12 +31,13 @@ from qiskit.exceptions import QiskitError
 
 from . import aqt_job
 from . import circuit_to_aqt
-from .aqt_provider import PORTAL_URL
+
 
 class ApiResource(TypedDict):
     name: str
     id: str
     type: Literal["simulator", "device"]
+
 
 class AQTResource(Backend):
 
@@ -46,7 +47,7 @@ class AQTResource(Backend):
             provider=provider)
         self._resource = resource
         self._workspace = workspace
-        self.url = PORTAL_URL
+        self.url = provider.portal_url
         self.headers = {"Authorization": f"Bearer {self._provider.access_token}", "SDK": "qiskit"}
         self._configuration = BackendConfiguration.from_dict({
             'backend_name': resource["name"],

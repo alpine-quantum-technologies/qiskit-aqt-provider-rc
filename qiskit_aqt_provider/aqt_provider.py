@@ -22,6 +22,7 @@ from .aqt_resource import AQTResource
 
 PORTAL_URL = "http://localhost:7777/api/v1"
 
+
 class AQTProvider():
     """Provider for backends from Alpine Quantum Technologies (AQT).
 
@@ -46,7 +47,7 @@ class AQTProvider():
 
     def __init__(self, access_token):
         super().__init__()
-
+        self.portal_url = PORTAL_URL
         self.access_token = access_token
         self.name = 'aqt_provider'
         # Populate the list of AQT backends

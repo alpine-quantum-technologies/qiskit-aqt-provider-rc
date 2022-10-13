@@ -14,7 +14,7 @@
 
 import unittest
 
-from numpy import pi
+from math import pi
 from qiskit import QuantumCircuit
 
 from qiskit_aqt_provider.circuit_to_aqt import circuit_to_aqt_new
@@ -31,9 +31,9 @@ class TestCircuitToAQTNew(unittest.TestCase):
         qc.measure(0, 0)
         aqt_json = circuit_to_aqt_new(qc)
         self.assertEqual(
-            [{'job_type': 'quantum_circuit',
+            {'job_type': 'quantum_circuit',
               'label': None,
-              'payload': {'quantum_circuit': [], 'repetitions': 100}}],
+              'payload': {'quantum_circuit': [], 'repetitions': 100}},
             aqt_json
         )
 
@@ -59,11 +59,12 @@ class TestCircuitToAQTNew(unittest.TestCase):
             'job_type': 'quantum_circuit',
             'label': None,
             'payload': {
-            'quantum_circuit': [
-                {'gate': 'RZ', 'phi': 1.0, 'qubit': 0},
-                {'gate': 'RZ', 'phi': 2.0, 'qubit': 1}
-            ],
-            'repetitions': 100}
+                'quantum_circuit': [
+                    {'gate': 'RZ', 'phi': 1.0, 'qubit': 0},
+                    {'gate': 'RZ', 'phi': 2.0, 'qubit': 1}
+                ],
+                'repetitions': 100
+            }
         }
         self.assertEqual(expected, circuit_to_aqt_new(qc))
 
