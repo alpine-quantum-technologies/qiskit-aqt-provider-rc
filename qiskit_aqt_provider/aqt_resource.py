@@ -12,7 +12,8 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-from typing import TypedDict
+import sys
+
 import warnings
 
 import requests
@@ -29,6 +30,11 @@ from qiskit.exceptions import QiskitError
 
 from . import aqt_job_new
 from . import circuit_to_aqt
+
+if sys.version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
 class ApiResource(TypedDict):
