@@ -13,10 +13,14 @@
 # that they have been altered from the originals.
 
 
+from http import HTTPStatus
+import requests
 from qiskit.providers.providerutils import filter_backends
 from qiskit.providers.exceptions import QiskitBackendNotFoundError
 from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDeviceIbex, AQTDevicePine
+from .aqt_resource import AQTResource
 
+PORTAL_URL = "http://localhost:7777/api/v1"
 
 class AQTProvider():
     """Provider for backends from Alpine Quantum Technologies (AQT).
@@ -56,6 +60,34 @@ class AQTProvider():
 
     def __repr__(self):
         return self.__str__()
+
+    def workspaces(self):
+        headers = {"Authorization": f"Bearer {self.access_token}", "SDK": "qiskit"}
+        res = requests.get(f"{PORTAL_URL}/workspaces", headers=headers)
+        if res.status_code == HTTPStatus.OK:
+            return res.json()
+        return []
+
+    def get_resource(self, workspace: str, resource: str):
+        workspaces = self.workspaces()
+        api_workspace = None
+        for workspace_data in workspaces:
+            if workspace_data.get("id") == workspace:
+                api_workspace = workspace_data
+                break
+        else:
+            raise ValueError(f"Workpace '{workspace}' is not accessible.")
+
+        resources = api_workspace.get("resources", [])
+        api_resource = None
+        for resource_data in resources:
+            if resource_data.get("id") == resource:
+                api_resource = resource_data
+                break
+        else:
+            raise ValueError(f"Resource '{resource}' does not exist in workspace '{workspace}'.")
+
+        return AQTResource(self, api_workspace.get("id"), api_resource.get("id"))
 
     def get_backend(self, name=None, **kwargs):
         """Return a single backend matching the specified filtering.
