@@ -13,7 +13,9 @@
 # that they have been altered from the originals.
 
 
+import os
 from http import HTTPStatus
+from typing import Optional
 import requests
 from qiskit.providers.providerutils import filter_backends
 from qiskit.providers.exceptions import QiskitBackendNotFoundError
@@ -38,6 +40,8 @@ class AQTProvider():
 
     where `'MY_TOKEN'` is the access token provided by AQT.
 
+    If no token is given, it is read from the `AQT_TOKEN` environment variable.
+
     Attributes:
         access_token (str): The access token.
         name (str): Name of the provider instance.
@@ -45,11 +49,18 @@ class AQTProvider():
                                    for grabbing backends.
     """
 
-    def __init__(self, access_token):
+    def __init__(self, access_token: Optional[str] = None):
         super().__init__()
         self.portal_url = PORTAL_URL
-        self.access_token = access_token
+        if access_token is None:
+            env_token = os.environ.get("AQT_TOKEN")
+            if env_token is None:
+                raise ValueError("No access token provided. Use 'AQT_TOKEN' environment variable.")
+            self.access_token = env_token
+        else:
+            self.access_token = access_token
         self.name = 'aqt_provider'
+
         # Populate the list of AQT backends
         self.backends = BackendService([AQTSimulator(provider=self),
                                         AQTSimulatorNoise1(provider=self),
@@ -69,7 +80,7 @@ class AQTProvider():
             return res.json()
         return []
 
-    def get_resource(self, workspace: str, resource: str):
+    def get_resource(self, workspace: str, resource: str) -> AQTResource:
         workspaces = self.workspaces()
         api_workspace = None
         for workspace_data in workspaces:
