@@ -78,8 +78,8 @@ def _experiment_to_aqt_circuit(circuit):
             ops.append(
                 {
                     "gate": "R",
-                    "phi": float(inst.params[0]) / pi,
-                    "theta": float(inst.params[1]) / pi,
+                    "phi": float(inst.params[1]) / pi,
+                    "theta": float(inst.params[0]) / pi,
                     "qubit": qubits[0],
                 }
             )
@@ -152,7 +152,7 @@ def circuit_to_aqt_new(circuits, shots=100):
     seqs = _experiment_to_aqt_circuit(circuits)
     out_dict = {
         'job_type': 'quantum_circuit',
-        'label': None,
+        'label': "qiskit",
         'payload': {
             'repetitions': shots,
             'quantum_circuit': seqs

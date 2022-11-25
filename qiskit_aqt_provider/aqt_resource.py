@@ -18,6 +18,7 @@ import warnings
 
 import requests
 
+from math import pi
 from qiskit import qobj as qobj_mod
 from qiskit.circuit.parameter import Parameter
 from qiskit.circuit.library import RZGate, RGate, RXXGate
@@ -82,7 +83,7 @@ class AQTResource(Backend):
         lam = Parameter('λ')
         self._target.add_instruction(RZGate(lam))
         self._target.add_instruction(RGate(theta, phi))
-        self._target.add_instruction(RXXGate(theta))  # (pi/2.0))
+        self._target.add_instruction(RXXGate(pi/2.0))
         self._target.add_instruction(Measure())
         self.options.set_validator("shots", (1, 200))
 

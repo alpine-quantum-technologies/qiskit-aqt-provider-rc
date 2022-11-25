@@ -22,7 +22,14 @@ from qiskit.providers.exceptions import QiskitBackendNotFoundError
 from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDeviceIbex, AQTDevicePine
 from .aqt_resource import AQTResource
 
-PORTAL_URL = "http://localhost:7777/api/v1"
+# Local mini portal
+#PORTAL_URL = "http://localhost:7777"
+
+# Deployed Arnica
+PORTAL_URL = "https://europe-west3-aqt-portal-dev.cloudfunctions.net"
+
+# Local Arnica
+#PORTAL_URL = "http://localhost:5001/aqt-portal-dev/europe-west3"
 
 
 class AQTProvider():
@@ -51,7 +58,11 @@ class AQTProvider():
 
     def __init__(self, access_token: Optional[str] = None):
         super().__init__()
-        self.portal_url = PORTAL_URL
+        portal_url_env = os.environ.get("AQT_PORTAL_URL")
+        if portal_url_env:
+            self.portal_url = f"{portal_url_env}/api/v1"
+        else:
+            self.portal_url = f"{PORTAL_URL}/api/v1"
         if access_token is None:
             env_token = os.environ.get("AQT_TOKEN")
             if env_token is None:
@@ -75,7 +86,7 @@ class AQTProvider():
 
     def workspaces(self):
         headers = {"Authorization": f"Bearer {self.access_token}", "SDK": "qiskit"}
-        res = requests.get(f"{PORTAL_URL}/workspaces", headers=headers)
+        res = requests.get(f"{self.portal_url}/workspaces", headers=headers)
         if res.status_code == HTTPStatus.OK:
             return res.json()
         return []
