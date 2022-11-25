@@ -12,13 +12,13 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
+from math import pi
 import sys
 
 import warnings
 
 import requests
 
-from math import pi
 from qiskit import qobj as qobj_mod
 from qiskit.circuit.parameter import Parameter
 from qiskit.circuit.library import RZGate, RGate, RXXGate
