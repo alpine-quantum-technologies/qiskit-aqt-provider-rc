@@ -33,7 +33,7 @@ class TestCircuitToAQTNew(unittest.TestCase):
         self.assertEqual(
             {
                 'job_type': 'quantum_circuit',
-                'label': None,
+                'label': "qiskit",
                 'payload': {'quantum_circuit': [], 'repetitions': 100}
             },
             aqt_json
@@ -59,7 +59,7 @@ class TestCircuitToAQTNew(unittest.TestCase):
         qc.measure(0, 0)
         expected = {
             'job_type': 'quantum_circuit',
-            'label': None,
+            'label': "qiskit",
             'payload': {
                 'quantum_circuit': [
                     {'gate': 'RZ', 'phi': 1.0, 'qubit': 0},
