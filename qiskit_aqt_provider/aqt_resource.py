@@ -54,6 +54,7 @@ class AQTResource(Backend):
         self._workspace = workspace
         self.url = provider.portal_url
         self.headers = {"Authorization": f"Bearer {self._provider.access_token}", "SDK": "qiskit"}
+        num_qubits = 20
         self._configuration = BackendConfiguration.from_dict({
             'backend_name': resource["name"],
             'backend_version': '0.0.1',
@@ -64,7 +65,7 @@ class AQTResource(Backend):
             'description': 'AQT trapped-ion device simulator',
             'basis_gates': ['rz', 'r', 'rxx'],
             'memory': False,
-            'n_qubits': 11,
+            'n_qubits': num_qubits,
             'conditional': False,
             'max_shots': 200,
             'max_experiments': 1,
@@ -77,7 +78,7 @@ class AQTResource(Backend):
                 }
             ]
         })
-        self._target = Target(num_qubits=11)
+        self._target = Target(num_qubits=num_qubits)
         theta = Parameter('θ')
         phi = Parameter('ϕ')
         lam = Parameter('λ')
@@ -131,6 +132,7 @@ class AQTResource(Backend):
         aqt_json = circuit_to_aqt.circuit_to_aqt_new(
             run_input, shots=out_shots)
 
+        #print(aqt_json)
         res = requests.post(
             f"{self.url}/submit/{self._workspace}/{self._resource['id']}",
             json=aqt_json,
@@ -144,6 +146,6 @@ class AQTResource(Backend):
         job_id = api_job.get("job_id")
         if job_id is None:
             raise Exception("API Response does not contain field 'job'.'job_id'.")
-        print(job_id)
+        #print(job_id)
         job = aqt_job_new.AQTJobNew(self, job_id, qobj=run_input)
         return job
