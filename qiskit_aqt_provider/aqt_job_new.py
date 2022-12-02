@@ -16,7 +16,7 @@
 
 import time
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List
 
 import requests
 from qiskit.providers import JobV1
@@ -95,14 +95,17 @@ class AQTJobNew(JobV1):
     def _rearrange_result(self, input_data):
         length = self.qobj.num_clbits
         bin_output = list('0' * length)
-        bin_input = [str(bit) for bit in input_data]
+        # convert sample entries to strings and pad the result list with "0" to the number
+        # of classical qbits
+        bin_input = list("".join([str(bit) for bit in input_data]).ljust(length, "0"))
+
         bin_input.reverse()
         for qu, cl in self.memory_mapping.items():
             bin_output[cl] = bin_input[qu]
         bin_output.reverse()
         return hex(int(''.join(bin_output), 2))
 
-    def _format_counts(self, samples):
+    def _format_counts(self, samples: List[List[int]]) -> Dict[str, int]:
         counts = {}
         for result in samples:
             h_result = self._rearrange_result(result)
