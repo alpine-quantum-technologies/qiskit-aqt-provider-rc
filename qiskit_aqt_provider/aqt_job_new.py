@@ -16,7 +16,7 @@
 
 import time
 
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import requests
 from qiskit.providers import JobV1
@@ -31,7 +31,13 @@ if TYPE_CHECKING:
 
 
 class AQTJobNew(JobV1):
-    def __init__(self, backend: "AQTResource", job_id: str, access_token: Optional[str] = None, qobj=None):
+    def __init__(
+        self,
+        backend: "AQTResource",
+        job_id: str,
+        access_token: Optional[str] = None,
+        qobj=None,
+    ):
         """Initialize a job instance.
 
         Parameters:
