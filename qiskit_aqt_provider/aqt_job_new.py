@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class AQTJobNew(JobV1):
-    def __init__(self, backend: "AQTResource", job_id: str, access_token=None, qobj=None):
+    def __init__(self, backend: "AQTResource", job_id: str, access_token: Optional[str] = None, qobj=None):
         """Initialize a job instance.
 
         Parameters:
