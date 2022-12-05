@@ -33,6 +33,7 @@ PORTAL_URL = "https://europe-west3-aqt-portal-dev.cloudfunctions.net"
 # Local mini portal
 # PORTAL_URL = "http://localhost:7777"
 
+
 class AQTProvider():
     """Provider for backends from Alpine Quantum Technologies (AQT).
 
