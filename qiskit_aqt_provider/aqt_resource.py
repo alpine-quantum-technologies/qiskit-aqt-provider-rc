@@ -146,6 +146,6 @@ class AQTResource(Backend):
         job_id = api_job.get("job_id")
         if job_id is None:
             raise Exception("API Response does not contain field 'job'.'job_id'.")
-        # print(job_id)
+        print(job_id)
         job = aqt_job_new.AQTJobNew(self, job_id, qobj=run_input)
         return job

@@ -22,9 +22,7 @@ from qiskit.providers.exceptions import QiskitBackendNotFoundError
 from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDeviceIbex, AQTDevicePine
 from .aqt_resource import AQTResource
 
-# TODO: allow URL override via a ENV-VAR
-# Local mini portal
-# PORTAL_URL = "http://localhost:7777"
+# The portal url can be overridden via the AQT_PORTAL_URL environment variable
 
 # Deployed Arnica
 PORTAL_URL = "https://europe-west3-aqt-portal-dev.cloudfunctions.net"
@@ -32,6 +30,8 @@ PORTAL_URL = "https://europe-west3-aqt-portal-dev.cloudfunctions.net"
 # Local Arnica
 # PORTAL_URL = "http://localhost:5001/aqt-portal-dev/europe-west3"
 
+# Local mini portal
+# PORTAL_URL = "http://localhost:7777"
 
 class AQTProvider():
     """Provider for backends from Alpine Quantum Technologies (AQT).
