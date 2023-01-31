@@ -97,7 +97,7 @@ class AQTResource(Backend):
                       DeprecationWarning)
         return self._configuration
 
-    def properties(self):
+    def properties(self):  # pylint: disable=no-self-use
         warnings.warn("The properties() method is deprecated and will be removed in a "
                       "future release. Instead you should access these attributes directly "
                       "off the object or via the .target attribute. You can refer to qiskit "

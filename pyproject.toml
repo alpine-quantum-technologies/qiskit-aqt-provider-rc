@@ -21,19 +21,33 @@ classifiers=[
     ]
 keywords=["qiskit", "sdk", "quantum"]
 
+packages = [
+    { include = "qiskit-aqt-provider" },
+    { include = "test", format = "sdist" }
+]
+include = [
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "LICENSE.txt",
+    "MANIFEST.in",
+    "README.md"
+]
+
 [tool.poetry.dependencies]
 python = "^3.7"
-requests = ">=2.19"
+
 qiskit-terra = ">=0.19.2"
+requests = ">=2.19"
 typing-extensions = ">=3.6.2"
-types-requests = "^2.28.11"
 
 [tool.poetry.dev-dependencies]
-pytest = ">=7"
-sphinx = ">=5.3"
-qiskit-sphinx-theme = ">=1.7.0"
-pylint = "=2.13"
 mypy = "=0.981"
+pylint = "=2.13"
+pytest = ">=7"
+qiskit-sphinx-theme = ">=1.7.0"
+sphinx = ">=5.3"
+types-requests = "^2.28.11"
+types-setuptools = "^65.7.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

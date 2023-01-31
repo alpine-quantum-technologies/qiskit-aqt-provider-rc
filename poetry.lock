@@ -391,7 +391,7 @@ sphinx = "*"
 
 [[package]]
 name = "qiskit-terra"
-version = "0.23.0"
+version = "0.23.1"
 description = "Software for developing quantum computing programs"
 category = "main"
 optional = false
@@ -650,10 +650,18 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "types-docutils"
+version = "0.19.1.2"
+description = "Typing stubs for docutils"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "types-requests"
 version = "2.28.11.8"
 description = "Typing stubs for requests"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -661,10 +669,21 @@ python-versions = "*"
 types-urllib3 = "<1.27"
 
 [[package]]
+name = "types-setuptools"
+version = "65.7.0.3"
+description = "Typing stubs for setuptools"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+types-docutils = "*"
+
+[[package]]
 name = "types-urllib3"
 version = "1.26.25.4"
 description = "Typing stubs for urllib3"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -712,7 +731,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "84f9c9fefec91cc8f4927b748f43deff2caa15a0dbf239aceabce2cd40321f3e"
+content-hash = "462affce2126dac02bbaaf8a5ebf4a59c42af320631a531c3c42241933d394cf"
 
 [metadata.files]
 alabaster = []
@@ -885,7 +904,9 @@ symengine = []
 sympy = []
 tomli = []
 typed-ast = []
+types-docutils = []
 types-requests = []
+types-setuptools = []
 types-urllib3 = [
     {file = "types-urllib3-1.26.25.4.tar.gz", hash = "sha256:eec5556428eec862b1ac578fb69aab3877995a99ffec9e5a12cf7fbd0cc9daee"},
     {file = "types_urllib3-1.26.25.4-py3-none-any.whl", hash = "sha256:ed6b9e8a8be488796f72306889a06a3fc3cb1aa99af02ab8afb50144d7317e49"},
