@@ -1,0 +1,375 @@
+[[package]]
+name = "certifi"
+version = "2022.12.7"
+description = "Python package for providing Mozilla's CA Bundle."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
+name = "charset-normalizer"
+version = "3.0.1"
+description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "dill"
+version = "0.3.6"
+description = "serialize all of python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+graph = ["objgraph (>=1.7.2)"]
+
+[[package]]
+name = "idna"
+version = "3.4"
+description = "Internationalized Domain Names in Applications (IDNA)"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
+name = "importlib-metadata"
+version = "4.13.0"
+description = "Read metadata from Python packages"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+typing-extensions = {version = ">=3.6.4", markers = "python_version < \"3.8\""}
+zipp = ">=0.5"
+
+[package.extras]
+docs = ["sphinx (>=3.5)", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "furo", "jaraco.tidelift (>=1.4)"]
+perf = ["ipython"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "flake8 (<5)", "pytest-cov", "pytest-enabler (>=1.3)", "packaging", "pyfakefs", "flufl.flake8", "pytest-perf (>=0.9.2)", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)", "importlib-resources (>=1.3)"]
+
+[[package]]
+name = "mpmath"
+version = "1.2.1"
+description = "Python library for arbitrary-precision floating-point arithmetic"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+tests = ["pytest (>=4.6)"]
+develop = ["wheel", "codecov", "pytest-cov", "pycodestyle", "pytest (>=4.6)"]
+
+[[package]]
+name = "numpy"
+version = "1.21.1"
+description = "NumPy is the fundamental package for array computing with Python."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
+name = "pbr"
+version = "5.11.1"
+description = "Python Build Reasonableness"
+category = "main"
+optional = false
+python-versions = ">=2.6"
+
+[[package]]
+name = "ply"
+version = "3.11"
+description = "Python Lex & Yacc"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "psutil"
+version = "5.9.4"
+description = "Cross-platform lib for process and system monitoring in Python."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[package.extras]
+test = ["ipaddress", "mock", "enum34", "pywin32", "wmi"]
+
+[[package]]
+name = "python-dateutil"
+version = "2.8.2"
+description = "Extensions to the standard Python datetime module"
+category = "main"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
+
+[package.dependencies]
+six = ">=1.5"
+
+[[package]]
+name = "qiskit-terra"
+version = "0.23.0"
+description = "Software for developing quantum computing programs"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+dill = ">=0.3"
+importlib_metadata = {version = "<5.0", markers = "python_version < \"3.8\""}
+numpy = ">=1.17"
+ply = ">=3.10"
+psutil = ">=5"
+python-dateutil = ">=2.8.0"
+rustworkx = ">=0.12.0"
+scipy = ">=1.5"
+shared-memory38 = {version = "*", markers = "python_version < \"3.8\""}
+singledispatchmethod = {version = "*", markers = "python_version < \"3.8\""}
+stevedore = ">=3.0.0"
+symengine = {version = ">=0.9", markers = "platform_machine == \"x86_64\" or platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"amd64\" or platform_machine == \"arm64\""}
+sympy = ">=1.3"
+typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
+
+[package.extras]
+all = ["matplotlib (>=3.3)", "ipywidgets (>=7.3.0)", "pydot", "pillow (>=4.2.1)", "pylatexenc (>=1.4)", "seaborn (>=0.9.0)", "pygments (>=2.4)", "z3-solver (>=4.7)", "python-constraint (>=1.4)", "qiskit-qasm3-import (>=0.1.0)"]
+bip-mapper = ["cplex", "docplex"]
+crosstalk-pass = ["z3-solver (>=4.7)"]
+csp-layout-pass = ["python-constraint (>=1.4)"]
+qasm3-import = ["qiskit-qasm3-import (>=0.1.0)"]
+toqm = ["qiskit-toqm (>=0.1.0)"]
+visualization = ["matplotlib (>=3.3)", "ipywidgets (>=7.3.0)", "pydot", "pillow (>=4.2.1)", "pylatexenc (>=1.4)", "seaborn (>=0.9.0)", "pygments (>=2.4)"]
+
+[[package]]
+name = "requests"
+version = "2.28.2"
+description = "Python HTTP for Humans."
+category = "main"
+optional = false
+python-versions = ">=3.7, <4"
+
+[package.dependencies]
+certifi = ">=2017.4.17"
+charset-normalizer = ">=2,<4"
+idna = ">=2.5,<4"
+urllib3 = ">=1.21.1,<1.27"
+
+[package.extras]
+socks = ["PySocks (>=1.5.6,!=1.5.7)"]
+use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
+
+[[package]]
+name = "rustworkx"
+version = "0.12.1"
+description = "A python graph library implemented in Rust"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = ">=1.16.0"
+
+[package.extras]
+all = ["matplotlib (>=3.0)", "pillow (>=5.4)"]
+graphviz = ["pillow (>=5.4)"]
+mpl = ["matplotlib (>=3.0)"]
+
+[[package]]
+name = "scipy"
+version = "1.6.1"
+description = "SciPy: Scientific Library for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = ">=1.16.5"
+
+[[package]]
+name = "shared-memory38"
+version = "0.1.2"
+description = "Backport of multiprocessing.shared_memory in Python 3.8"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "singledispatchmethod"
+version = "1.0"
+description = "Backport of @functools.singledispatchmethod to Python 2.7-3.7."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "six"
+version = "1.16.0"
+description = "Python 2 and 3 compatibility utilities"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
+name = "stevedore"
+version = "3.5.2"
+description = "Manage dynamic plugins for Python applications"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+importlib-metadata = {version = ">=1.7.0", markers = "python_version < \"3.8\""}
+pbr = ">=2.0.0,<2.1.0 || >2.1.0"
+
+[[package]]
+name = "symengine"
+version = "0.9.2"
+description = "Python library providing wrappers to SymEngine"
+category = "main"
+optional = false
+python-versions = ">=3.7,<4"
+
+[[package]]
+name = "sympy"
+version = "1.10.1"
+description = "Computer algebra system (CAS) in Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+mpmath = ">=0.19"
+
+[[package]]
+name = "typing-extensions"
+version = "4.4.0"
+description = "Backported and Experimental Type Hints for Python 3.7+"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
+name = "urllib3"
+version = "1.26.14"
+description = "HTTP library with thread-safe connection pooling, file post, and more."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+
+[package.extras]
+brotli = ["brotlicffi (>=0.8.0)", "brotli (>=1.0.9)", "brotlipy (>=0.6.0)"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "urllib3-secure-extra", "ipaddress"]
+socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
+
+[[package]]
+name = "zipp"
+version = "3.12.0"
+description = "Backport of pathlib-compatible object wrapper for zip files"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+docs = ["sphinx (>=3.5)", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "furo", "sphinx-lint", "jaraco.tidelift (>=1.4)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-cov", "pytest-enabler (>=1.3)", "jaraco.itertools", "func-timeout", "jaraco.functools", "more-itertools", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)", "pytest-flake8"]
+
+[metadata]
+lock-version = "1.1"
+python-versions = "^3.7"
+content-hash = "33dca09a5ac5aa4ecaed8cdfd0ed3d25b767ece263c25d2254f3f8a2bf569bae"
+
+[metadata.files]
+certifi = [
+    {file = "certifi-2022.12.7-py3-none-any.whl", hash = "sha256:4ad3232f5e926d6718ec31cfc1fcadfde020920e278684144551c91769c7bc18"},
+    {file = "certifi-2022.12.7.tar.gz", hash = "sha256:35824b4c3a97115964b408844d64aa14db1cc518f6562e8d7261699d1350a9e3"},
+]
+charset-normalizer = []
+dill = []
+idna = []
+importlib-metadata = []
+mpmath = []
+numpy = []
+pbr = []
+ply = []
+psutil = [
+    {file = "psutil-5.9.4-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:c1ca331af862803a42677c120aff8a814a804e09832f166f226bfd22b56feee8"},
+    {file = "psutil-5.9.4-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:68908971daf802203f3d37e78d3f8831b6d1014864d7a85937941bb35f09aefe"},
+    {file = "psutil-5.9.4-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:3ff89f9b835100a825b14c2808a106b6fdcc4b15483141482a12c725e7f78549"},
+    {file = "psutil-5.9.4-cp27-cp27m-win32.whl", hash = "sha256:852dd5d9f8a47169fe62fd4a971aa07859476c2ba22c2254d4a1baa4e10b95ad"},
+    {file = "psutil-5.9.4-cp27-cp27m-win_amd64.whl", hash = "sha256:9120cd39dca5c5e1c54b59a41d205023d436799b1c8c4d3ff71af18535728e94"},
+    {file = "psutil-5.9.4-cp27-cp27mu-manylinux2010_i686.whl", hash = "sha256:6b92c532979bafc2df23ddc785ed116fced1f492ad90a6830cf24f4d1ea27d24"},
+    {file = "psutil-5.9.4-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:efeae04f9516907be44904cc7ce08defb6b665128992a56957abc9b61dca94b7"},
+    {file = "psutil-5.9.4-cp36-abi3-macosx_10_9_x86_64.whl", hash = "sha256:54d5b184728298f2ca8567bf83c422b706200bcbbfafdc06718264f9393cfeb7"},
+    {file = "psutil-5.9.4-cp36-abi3-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:16653106f3b59386ffe10e0bad3bb6299e169d5327d3f187614b1cb8f24cf2e1"},
+    {file = "psutil-5.9.4-cp36-abi3-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:54c0d3d8e0078b7666984e11b12b88af2db11d11249a8ac8920dd5ef68a66e08"},
+    {file = "psutil-5.9.4-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:6001c809253a29599bc0dfd5179d9f8a5779f9dffea1da0f13c53ee568115e1e"},
+    {file = "psutil-5.9.4.tar.gz", hash = "sha256:3d7f9739eb435d4b1338944abe23f49584bde5395f27487d2ee25ad9a8774a62"},
+]
+python-dateutil = []
+qiskit-terra = []
+requests = []
+rustworkx = [
+    {file = "rustworkx-0.12.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:7eeae40cd3ed014badee6a47569aaaea66b872a2927bb9e76a11a2f8a690b694"},
+    {file = "rustworkx-0.12.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:25689ec33a880c397f99cf7374d16be97a086a8c13675c20e53c076d05fdba0d"},
+    {file = "rustworkx-0.12.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f833c688556c7116704097388240da876d6a689b6e4cd9c71da8091ba0fcfcc5"},
+    {file = "rustworkx-0.12.1-cp310-cp310-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:488737db74c3999b3ad668eee1f6f033fa81be18f7138e027ecf019adf8de15b"},
+    {file = "rustworkx-0.12.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c7221280b6f47acacd12d140a2fc8e0a0b11a99c0802804cae5aee437327da92"},
+    {file = "rustworkx-0.12.1-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4673b613fa192750ba938274a4175391df9cd6f5476039312ffba35c5783cb27"},
+    {file = "rustworkx-0.12.1-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0cdec3526deac855957bd2431beddf2fb2fcb8c2a915c630c78b39b198ea946a"},
+    {file = "rustworkx-0.12.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:42c84a8c923f8a1f68347999381cde549dbe81f4212896fab5942898045e6ad3"},
+    {file = "rustworkx-0.12.1-cp310-cp310-win32.whl", hash = "sha256:ef49f00c09bbe0caf1fbf41ccefe34e8dc7a1835ec2632203d8a91577009222f"},
+    {file = "rustworkx-0.12.1-cp310-cp310-win_amd64.whl", hash = "sha256:2e05efd04a5e615bd5479e627743921ab562818e54f7269b25c57d50d2c41fdb"},
+    {file = "rustworkx-0.12.1-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:346543e11668cca0723616ea6b3de77573b468a0c73095baf693ebbed90d8994"},
+    {file = "rustworkx-0.12.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:b379e638d043aa7c0b70d5125f1f8eab85c44ec506a152b4948f8de1f83a0387"},
+    {file = "rustworkx-0.12.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:96e44ba57e23becd8bcee0aecc23a6761d3a78e0b0c35ab65d7fd9d439198180"},
+    {file = "rustworkx-0.12.1-cp311-cp311-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:abab0e57eea912e0c39af90cb1a7afb52213f100657461580c5059b7cd96da17"},
+    {file = "rustworkx-0.12.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:375eb1bea1e739eb4744e51302c934f4fb0d75e1868fba4b0e37acbf5c0666ce"},
+    {file = "rustworkx-0.12.1-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:aa4a32664384aead1cdb67fb7478478410892c8e40c5d92b02c11e2989102ff0"},
+    {file = "rustworkx-0.12.1-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:42a9da09ea30c372b00e79e10b5adc06535cf405f857355271a2bd68872ac434"},
+    {file = "rustworkx-0.12.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c95f0163bb979f37f8645f16315030fb02a089cd26c61f24598be671d6e69c32"},
+    {file = "rustworkx-0.12.1-cp311-cp311-win32.whl", hash = "sha256:9e42953124a41ea34be3e2bc8a489e30c3d2536be062f486838a0650ab43475b"},
+    {file = "rustworkx-0.12.1-cp311-cp311-win_amd64.whl", hash = "sha256:0f71bbb063a76f4731210207fa1bda0c7f4b5c7e53ec5f9b59b3569c1962d8e0"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:9800a8aa630b7a0f78ddaaefd6844d2e9e67fb0776d751c8b2e4ddecffd499d6"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:87124022aa80d0a05d84deddbd725067952ff912ea5dc45e1e04cb57f696efca"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3b9bbb9219ad2e00a5b328cb5ce49a107c1a919435447e7a7a6a9f9466693e40"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:70d2b41afda256911d4853ac2414fde05d5166dbabdece1f42d95f6aab893281"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:abea9c1627275633a99a3945d10f3cd9b0389dfe36be23486faaffaf4db9c0cd"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c11deea83a178df19cdfd6a4e2981d52b0b6a393e2168a494866d934ff430022"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-win32.whl", hash = "sha256:2e1c0a43182a61df84964b9673c15b3b2b636db01f5bd4ae8752e646bed9f28b"},
+    {file = "rustworkx-0.12.1-cp37-cp37m-win_amd64.whl", hash = "sha256:126e14ae1245ad97bdaf932578e84e9fda9851733590dd2ad8f4f6b16a8610d3"},
+    {file = "rustworkx-0.12.1-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:d994e78b203bc406a026a9c20b2bec77d1990fb1384843a8f84e750160e790e4"},
+    {file = "rustworkx-0.12.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:95d683cc9adf7c0c39b2c46ec087d69a42669a4e63a701ca77b9bd9a52ab1400"},
+    {file = "rustworkx-0.12.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:dbcff417c4d03757373a6409d0677a6c1cc384d04f897792f353ee17ce1e09aa"},
+    {file = "rustworkx-0.12.1-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:28fc8a400ad3e2b187b1c354c1cdfee7f9e00fec9c527291b622334d426a3694"},
+    {file = "rustworkx-0.12.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4a1f34b14c6e0021a6ed427450e776e7cd16412b57655f99cbf6b09d5092b581"},
+    {file = "rustworkx-0.12.1-cp38-cp38-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:6d9e77eef49df6b4d692d8ddb69eedfd0e2315a5b477e5b8a65d86f4d37adcd2"},
+    {file = "rustworkx-0.12.1-cp38-cp38-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4f84f0eca04c7863be96dbe2b642ef139e94064ef537eb3777bfe9a96a4385f9"},
+    {file = "rustworkx-0.12.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:031f719d05af218765ed377c54811b11567e1b1e106a670b30179992ea89f2d7"},
+    {file = "rustworkx-0.12.1-cp38-cp38-win32.whl", hash = "sha256:96a269fa36e78807987ab632bb34c9a475791478a17d3bd795121a1648fcc8d6"},
+    {file = "rustworkx-0.12.1-cp38-cp38-win_amd64.whl", hash = "sha256:73fb53bac355e03d455ad2454a21eb47b16d6381ad2c2cb9da534b48c4c64122"},
+    {file = "rustworkx-0.12.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:f6803281bcf8c56c91e69ef7ee62c76af8a8e757ad98c5de8b48281702c75e2f"},
+    {file = "rustworkx-0.12.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:bc282fbd95938ae3305489c48a3dceb9a4354ca3bcb691578e9bd07c25d5ea27"},
+    {file = "rustworkx-0.12.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:288ff3a44708afaafc46c6d0c9435a13d02bf6dad32b3d07207ce0f55881e5cd"},
+    {file = "rustworkx-0.12.1-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:b3efa381d4329ced0f6ec890b70d520d7047057baea2d793266aee0366607bbe"},
+    {file = "rustworkx-0.12.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b220516158411ec16614b662d701960a0740e947c39b2b9f205a70e3e7899665"},
+    {file = "rustworkx-0.12.1-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:94c02dcd5d4f05220bf1721a9c531b7f6203497ea24934c49d82dfdeac6a22ba"},
+    {file = "rustworkx-0.12.1-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0d2442fa5a64e8c2c74f43b8f8713964f0d6760c2cd96b8accd28636cc222786"},
+    {file = "rustworkx-0.12.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:29723a1cca360a1ad968d7b0bef8f639ab7d4af201c4d3fec019bee0ea11e329"},
+    {file = "rustworkx-0.12.1-cp39-cp39-win32.whl", hash = "sha256:25c9c616ff9d1e8112d17cdf83442f862ed6dd94f8a60037378b41bea29041ee"},
+    {file = "rustworkx-0.12.1-cp39-cp39-win_amd64.whl", hash = "sha256:dd64db8680c159ce7f69991560fca559a1c8d21282f479aab9595451ac33d0ff"},
+    {file = "rustworkx-0.12.1.tar.gz", hash = "sha256:13a19a2f64dff086b3bffffb294c4630100ecbc13634b4995d9d36a481ae130e"},
+]
+scipy = []
+shared-memory38 = []
+singledispatchmethod = []
+six = []
+stevedore = []
+symengine = []
+sympy = []
+typing-extensions = [
+    {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
+    {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
+]
+urllib3 = []
+zipp = []
