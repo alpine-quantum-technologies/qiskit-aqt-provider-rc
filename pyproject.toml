@@ -41,7 +41,9 @@ requests = ">=2.19"
 typing-extensions = ">=3.6.2"
 
 [tool.poetry.dev-dependencies]
+jupyter-sphinx = "^0.4.0"
 mypy = "=0.981"
+poethepoet = "^0.18.1"
 pylint = "=2.13"
 pytest = ">=7"
 qiskit-sphinx-theme = ">=1.7.0"
@@ -52,3 +54,11 @@ types-setuptools = "^65.7.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+test = "pytest"
+pylint = "pylint qiskit_aqt_provider test"
+mypy = "mypy ."
+lint = ["mypy", "pylint"]
+docs = "sphinx-build -b html -W docs docs/_build"
+all = ["test", "lint", "docs"]
