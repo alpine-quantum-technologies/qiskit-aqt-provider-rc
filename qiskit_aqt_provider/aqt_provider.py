@@ -15,9 +15,9 @@
 
 import os
 from http import HTTPStatus
-from tabulate import tabulate
 from typing import Dict, List, Optional, Union
 import requests
+from tabulate import tabulate
 from qiskit.providers.providerutils import filter_backends
 from qiskit.providers.exceptions import QiskitBackendNotFoundError
 from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDeviceIbex, AQTDevicePine
@@ -37,6 +37,7 @@ PORTAL_URL = "http://arnica.internal.aqt.eu:7777"
 # Local mini portal
 # PORTAL_URL = "http://localhost:7777"
 
+
 class WorkspaceTable:
     def __init__(self, data):
         self.data: Dict[str, List] = {}
@@ -49,19 +50,21 @@ class WorkspaceTable:
         for workspace_id, resources in self.data.items():
             for count, resource in enumerate(resources):
                 if count == 0:
-                    self.table.append([workspace_id, resource["id"], resource["name"], resource["type"]])
+                    line = [workspace_id, resource["id"], resource["name"], resource["type"]]
                 else:
-                    self.table.append(["", resource["id"], resource["name"], resource["type"]])
+                    line = ["", resource["id"], resource["name"], resource["type"]]
+                self.table.append(line)
 
     def workspace(self, workspace_id: str) -> Union[List, None]:
         return self.data.get(workspace_id)
 
     def __str__(self) -> str:
-        headers=["Workspace ID", "Resource ID", "Description", "Resource type"]
+        headers = ["Workspace ID", "Resource ID", "Description", "Resource type"]
         return tabulate(self.table, headers=headers, tablefmt="fancy_grid")
 
     def __iter__(self):
         return self.data.__iter__()
+
 
 class AQTProvider():
     """Provider for backends from Alpine Quantum Technologies (AQT).
