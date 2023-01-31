@@ -42,8 +42,8 @@ requests = ">=2.19"
 typing-extensions = ">=3.6.2"
 
 [tool.poetry.dev-dependencies]
+qiskit-terra = {version = ">=0.19.2", extras = ["visualization"]}
 jupyter-sphinx = "^0.4.0"
-matplotlib = "^3.6.3"
 mypy = "=0.981"
 poethepoet = "^0.18.1"
 pylint = "=2.13"
