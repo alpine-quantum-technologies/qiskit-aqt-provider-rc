@@ -19,7 +19,7 @@ requirements = [
     "requests>=2.19",
     "qiskit-terra>=0.19.2",
     "typing-extensions>=3.6.2",
-    "tabulate>=0.9.0"
+    "tabulate>=0.9.0",
 ]
 
 PACKAGES = setuptools.find_packages(exclude=["test*"])
