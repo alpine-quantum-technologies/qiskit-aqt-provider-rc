@@ -22,7 +22,7 @@ classifiers=[
 keywords=["qiskit", "sdk", "quantum"]
 
 packages = [
-    { include = "qiskit-aqt-provider" },
+    { include = "qiskit_aqt_provider" },
     { include = "test", format = "sdist" }
 ]
 include = [
