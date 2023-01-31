@@ -17,6 +17,7 @@ classifiers=[
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering",
     ]
 keywords=["qiskit", "sdk", "quantum"]
@@ -34,7 +35,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 
 qiskit-terra = ">=0.19.2"
 requests = ">=2.19"
@@ -42,6 +43,7 @@ typing-extensions = ">=3.6.2"
 
 [tool.poetry.dev-dependencies]
 jupyter-sphinx = "^0.4.0"
+matplotlib = "^3.6.3"
 mypy = "=0.981"
 poethepoet = "^0.18.1"
 pylint = "=2.13"
