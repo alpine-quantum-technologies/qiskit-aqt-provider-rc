@@ -14,198 +14,242 @@
 
 # pylint: disable=protected-access
 
-import time
+import threading
+import uuid
+from concurrent.futures import ThreadPoolExecutor, wait
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Set, Union
 
-from typing import TYPE_CHECKING, Dict, List, Optional
-
-import requests
-from qiskit.providers import JobV1
-from qiskit.providers import JobError
-from qiskit.providers import JobTimeoutError
+from qiskit import QuantumCircuit
+from qiskit.providers import JobError, JobTimeoutError, JobV1
 from qiskit.providers.jobstatus import JobStatus
-from qiskit.result import Result
+from qiskit.result.models import ExperimentResult, ExperimentResultData
+from qiskit.result.result import Result
 
+from qiskit_aqt_provider import circuit_to_aqt
 
 if TYPE_CHECKING:
     from qiskit_aqt_provider.aqt_resource import AQTResource
+
+
+# Tags for the status of AQT API jobs
+
+
+@dataclass
+class JobFinished:
+    """The job finished successfully."""
+
+    status: ClassVar = JobStatus.DONE
+    samples: List[List[int]]
+
+
+@dataclass
+class JobFailed:
+    """An error occurred during the job execution."""
+
+    status: ClassVar = JobStatus.ERROR
+    error: str
+
+
+class JobQueued:
+    """The job is queued."""
+
+    status: ClassVar = JobStatus.QUEUED
+
+
+class JobOngoing:
+    """The job is running."""
+
+    status: ClassVar = JobStatus.RUNNING
+
+
+class JobCancelled:
+    """The job was cancelled."""
+
+    status = ClassVar = JobStatus.CANCELLED
 
 
 class AQTJobNew(JobV1):
     def __init__(
         self,
         backend: "AQTResource",
-        job_id: str,
-        access_token: Optional[str] = None,
-        qobj=None,
+        circuits: List[QuantumCircuit],
+        shots: int,
     ):
         """Initialize a job instance.
 
         Parameters:
             backend (BaseBackend): Backend that job was executed on.
-            job_id (str): The unique job ID.
-            access_token (str): The AQT access token.
-            qobj (Qobj): Quantum object, if any.
+            circuits (List[QuantumCircuit]): List of circuits to execute.
+            shots (int): Number of repetitions per circuit.
         """
-        super().__init__(backend, job_id)
-        self._backend = backend
-        self.access_token = access_token
-        self.qobj = qobj
-        self._job_id = job_id
-        self.memory_mapping = self._build_memory_mapping()
+        super().__init__(backend, str(uuid.uuid4()))
 
-    def _wait_for_result(self, timeout=None, wait=5):
-        start_time = time.time()
-        result = None
-        header = self._backend.headers
-        while True:
-            elapsed = time.time() - start_time
-            if timeout and elapsed >= timeout:
-                raise JobTimeoutError('Timed out waiting for result')
-            result = requests.get(
-                f"{self._backend.url}/result/{self._job_id}",
-                headers=header
-            ).json()
-            response = result["response"]
-            if response['status'] == 'finished':
-                break
-            if response['status'] == 'error':
-                raise JobError('API returned error:\n' + str(result))
-            time.sleep(wait)
-        return result
+        self.shots = shots
+        self.circuits = circuits
 
-    def _build_memory_mapping(self):
-        qu2cl = {}
-        qubit_map = {}
-        count = 0
-
-        # If a list of quantum circuits use the first element
-        # since we only can have a maximum of a single
-        # circuit per job.
-        if isinstance(self.qobj, list):
-            self.qobj = self.qobj[0]
-
-        for bit in self.qobj.qubits:
-            qubit_map[bit] = count
-            count += 1
-        clbit_map = {}
-        count = 0
-        for bit in self.qobj.clbits:
-            clbit_map[bit] = count
-            count += 1
-        for instruction in self.qobj.data:
-            if instruction[0].name == 'measure':
-                for index, qubit in enumerate(instruction[1]):
-                    qu2cl[qubit_map[qubit]] = clbit_map[instruction[2][index]]
-        return qu2cl
-
-    def _rearrange_result(self, input_data):
-        length = self.qobj.num_clbits
-        bin_output = list('0' * length)
-        # convert sample entries to strings and pad the result list with "0" to the number
-        # of classical qbits
-        bin_input = list("".join([str(bit) for bit in input_data]).ljust(length, "0"))
-
-        bin_input.reverse()
-        for qu, cl in self.memory_mapping.items():
-            bin_output[cl] = bin_input[qu]
-        bin_output.reverse()
-        return hex(int(''.join(bin_output), 2))
-
-    def _format_counts(self, samples: List[List[int]]) -> Dict[str, int]:
-        counts = {}
-        for result in samples:
-            h_result = self._rearrange_result(result)
-            if h_result not in counts:
-                counts[h_result] = 1
-            else:
-                counts[h_result] += 1
-        return counts
-
-    def result(self,
-               timeout=None,
-               wait=5):
-        """Get the result data of a circuit.
-
-        Parameters:
-            timeout (float): A timeout for trying to get the counts.
-            wait (float): A specified wait time between counts retrival
-                          attempts.
-
-        Returns:
-            Result: Result object.
-        """
-        result = self._wait_for_result(timeout, wait)
-        response = result["response"]
-        samples = response["result"]
-        results = [
-            {
-                'success': True,
-                'shots': len(samples),
-                'data': {'counts': self._format_counts(samples)},
-                'header': {'memory_slots': self.qobj.num_clbits,
-                           'name': self.qobj.name,
-                           'metadata': self.qobj.metadata}
-            }
-        ]
-        qobj_id = id(self.qobj)
-
-        return Result.from_dict({
-            'results': results,
-            'backend_name': self._backend.name,
-            'backend_version': '0.0.1',
-            'qobj_id': qobj_id,
-            'success': True,
-            'job_id': self._job_id,
-        })
-
-    def get_counts(self, circuit=None, timeout=None, wait=5):
-        """Get the histogram data of a measured circuit.
-
-        Parameters:
-            circuit (str or QuantumCircuit or int or None): The index of the circuit.
-            timeout (float): A timeout for trying to get the counts.
-            wait (float): A specified wait time between counts retrival
-                          attempts.
-
-        Returns:
-            dict: Dictionary of string : int key-value pairs.
-        """
-        return self.result(timeout=timeout, wait=wait).get_counts(circuit)
-
-    def cancel(self):
-        pass
-
-    def status(self):
-        """Query for the job status.
-        """
-        header = {
-            "Ocp-Apim-Subscription-Key": self._backend._provider.access_token,
-            "SDK": "qiskit"
-        }
-        result = requests.put(self._backend.url,
-                              data={'id': self._job_id,
-                                    'access_token': self.access_token},
-                              headers=header)
-        code = result.status_code
-
-        if code == 100:
-            status = JobStatus.RUNNING
-        elif code == 200:
-            status = JobStatus.DONE
-        elif code in [201, 202]:
-            status = JobStatus.INITIALIZING
-        else:
-            status = JobStatus.ERROR
-        return status
+        self._jobs: Dict[
+            str, Union[JobFinished, JobFailed, JobQueued, JobOngoing, JobCancelled]
+        ] = {}
+        self._jobs_lock = threading.Lock()
 
     def submit(self):
-        """Submits a job for execution.
+        """Submits a job for execution."""
+        for circuit in self.circuits:
+            self._submit_single(circuit, self.shots)
 
-        :class:`.AQTJob` does not support standalone submission of a job
-        object. This can not be called and the Job is only submitted via
-        the ``run()`` method of the backend
+    def status(self) -> JobStatus:
+        # update the local job cache
+        with ThreadPoolExecutor(thread_name_prefix="status_worker_") as pool:
+            futures = [
+                pool.submit(self._result_single, job_id) for job_id in self._jobs
+            ]
+            wait(futures, timeout=10.0)
 
-        :raises NotImplementedError: This method does not support calling
-            ``submit()``
+        return self._aggregate_status()
+
+    def result(self):
+        self.wait_for_final_state()  # one of DONE, CANCELLED, ERROR
+        agg_status = self._aggregate_status()
+
+        results = []
+
+        # jobs order is submission order
+        for circuit, result in zip(self.circuits, self._jobs.values()):
+            data = {}
+
+            if isinstance(result, JobFinished):
+                meas_map = _build_memory_mapping(circuit)
+                data["counts"] = _format_counts(result.samples, meas_map)
+
+            results.append(
+                {
+                    "shots": self.shots,
+                    "success": result.status is JobStatus.DONE,
+                    "status": result.status.value,
+                    "data": data,
+                    "header": {
+                        "memory_slots": circuit.num_clbits,
+                        "name": circuit.name,
+                        "metadata": circuit.metadata or {},
+                    },
+                }
+            )
+
+        return Result.from_dict(
+            {
+                "backend_name": self._backend.name,
+                "backend_version": self._backend.version,
+                "qobj_id": id(self.circuits),
+                "job_id": self.job_id(),
+                "success": agg_status is JobStatus.DONE,
+                "results": results,
+            }
+        )
+
+    @property
+    def job_ids(self) -> Set[str]:
+        """The AQT API identifiers of all the jobs for this Qiskit job."""
+        return set(self._jobs)
+
+    def _submit_single(self, circuit: QuantumCircuit, shots: int) -> None:
+        """Submit a single quantum circuit for execution on the backend.
+
+        Parameters:
+            circuit (QuantumCircuit): The quantum circuit to execute
+            shots (int): Number of repetitions
+
+        Returns:
+            The AQT job identifier.
         """
-        raise NotImplementedError
+        payload = circuit_to_aqt.circuit_to_aqt_new(circuit, shots=shots)
+        job_id = self._backend.submit(payload)
+        with self._jobs_lock:
+            self._jobs[job_id] = JobQueued()
+
+    def _result_single(self, job_id: str) -> None:
+        payload = self._backend.result(job_id)
+        response = payload["response"]
+
+        with self._jobs_lock:
+            if response["status"] == "finished":
+                self._jobs[job_id] = JobFinished(samples=response["result"])
+            elif response["status"] == "error":
+                self._jobs[job_id] = JobFailed(error=str(response["result"]))
+            elif response["status"] == "queued":
+                self._jobs[job_id] = JobQueued()
+            elif response["status"] == "ongoing":
+                self._jobs[job_id] = JobOngoing()
+            else:
+                raise RuntimeError(
+                    f"API returned unknown job status: {response['status']}."
+                )
+
+    def _aggregate_status(self) -> JobStatus:
+        # aggregate job status from individual circuits
+        with self._jobs_lock:
+            statuses = [payload.status for payload in self._jobs.values()]
+
+        if any(s is JobStatus.ERROR for s in statuses):
+            return JobStatus.ERROR
+
+        if any(s is JobStatus.CANCELLED for s in statuses):
+            return JobStatus.CANCELLED
+
+        if any(s is JobStatus.RUNNING for s in statuses):
+            return JobStatus.RUNNING
+
+        if all(s is JobStatus.QUEUED for s in statuses):
+            return JobStatus.QUEUED
+
+        if all(s is JobStatus.DONE for s in statuses):
+            return JobStatus.DONE
+
+        # TODO: check for completeness
+        return JobStatus.QUEUED
+
+
+def _build_memory_mapping(circuit: QuantumCircuit) -> Dict[int, int]:
+    qu2cl = {}
+    qubit_map = {}
+    count = 0
+
+    for bit in circuit.qubits:
+        qubit_map[bit] = count
+        count += 1
+    clbit_map = {}
+    count = 0
+    for bit in circuit.clbits:
+        clbit_map[bit] = count
+        count += 1
+    for instruction in circuit.data:
+        if instruction[0].name == "measure":
+            for index, qubit in enumerate(instruction[1]):
+                qu2cl[qubit_map[qubit]] = clbit_map[instruction[2][index]]
+    return qu2cl
+
+
+def _rearrange_result(shots_results: List[int], qubit_to_bit: Dict[int, int]) -> str:
+    length = max(qubit_to_bit.values()) + 1
+    bin_output = list("0" * length)
+    # convert sample entries to strings and pad the result list with "0" to the number
+    # of classical qbits
+    bin_input = list("".join([str(bit) for bit in shots_results]).ljust(length, "0"))
+
+    bin_input.reverse()
+    for qu, cl in qubit_to_bit.items():
+        bin_output[cl] = bin_input[qu]
+    return hex(int("".join(bin_output), 2))
+
+
+def _format_counts(
+    samples: List[List[int]], qubit_to_bit: Dict[int, int]
+) -> Dict[str, int]:
+    counts = {}
+    for shots_results in samples:
+        h_result = _rearrange_result(shots_results, qubit_to_bit)
+        if h_result not in counts:
+            counts[h_result] = 1
+        else:
+            counts[h_result] += 1
+    return counts

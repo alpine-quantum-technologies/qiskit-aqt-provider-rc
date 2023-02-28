@@ -13,8 +13,10 @@
 # that they have been altered from the originals.
 
 import json
+from typing import Any, Dict, List
 
 from numpy import pi
+from qiskit import QuantumCircuit
 
 
 def _experiment_to_seq(circuit):
@@ -61,7 +63,7 @@ def _experiment_to_seq(circuit):
     return json.dumps(ops)
 
 
-def _experiment_to_aqt_circuit(circuit):
+def _experiment_to_aqt_circuit(circuit: QuantumCircuit) -> List[Dict[str, Any]]:
     count = 0
     qubit_map = {}
     for bit in circuit.qubits:
@@ -132,24 +134,18 @@ def circuit_to_aqt(circuits, access_token, shots=100):
     return out_json
 
 
-def circuit_to_aqt_new(circuits, shots=100):
-    """Return a list of json payload strings for each experiment in a qobj
+def circuit_to_aqt_new(circuit: QuantumCircuit, shots: int) -> Dict[str, Any]:
+    """Convert a Qiskit `QuantumCircuit` into a JSON-serializable payload describing
+    a circuit execution request on the AQT API.
 
-    The output json format of an experiment is defined as follows:
-        [[op_string, gate_exponent, qubits]]
+    Parameters:
+        circuit (QuantumCircuit): The quantum circuit to convert
+        shots (int): Number of repetitions
 
-    which is a list of sequential quantum operations, each operation defined
-    by:
-
-    op_string: str that specifies the operation type, either "X","Y","MS"
-    gate_exponent: float that specifies the gate_exponent of the operation
-    qubits: list of qubits where the operation acts on.
+    Returns:
+        The corresponding circuit execution request payload.
     """
-    if isinstance(circuits, list):
-        if len(circuits) > 1:
-            raise Exception
-        circuits = circuits[0]
-    seqs = _experiment_to_aqt_circuit(circuits)
+    seqs = _experiment_to_aqt_circuit(circuit)
     out_dict = {
         'job_type': 'quantum_circuit',
         'label': "qiskit",
