@@ -9,3 +9,5 @@ qiskit-terra[visualization]
 types-requests
 types-tabulate
 types-setuptools
+black
+isort
