@@ -164,7 +164,9 @@ class AQTResource(Backend):
 
         if any(
             map(
-                lambda x: isinstance(x, (qobj_mod.PulseQobj, pulse.Schedule, pulse.ScheduleBlock)),
+                lambda x: isinstance(
+                    x, (qobj_mod.PulseQobj, pulse.Schedule, pulse.ScheduleBlock)
+                ),
                 run_input,
             )
         ):
@@ -183,7 +185,7 @@ class AQTResource(Backend):
         shots = options.get("shots", self.options.shots)
 
         if shots > self.configuration().max_shots:
-            raise ValueError("Number of shots is larger than maximum " "number of shots")
+            raise ValueError("Number of shots is larger than maximum number of shots")
 
         job = aqt_job_new.AQTJobNew(self, circuits=run_input, shots=shots)
         job.submit()
