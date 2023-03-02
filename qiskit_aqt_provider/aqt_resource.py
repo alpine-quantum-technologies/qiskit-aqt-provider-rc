@@ -2,7 +2,7 @@
 
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2019.
+# (C) Copyright IBM 2019, Alpine Quantum Technologies GmbH 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -29,7 +29,7 @@ from qiskit.providers import Options
 from qiskit.providers.models import BackendConfiguration
 from qiskit.transpiler import Target
 
-from . import aqt_job_new, circuit_to_aqt
+from . import aqt_job_new
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -70,7 +70,11 @@ class AQTResource(Backend):
                 "max_shots": 200,
                 "max_experiments": 1,
                 "open_pulse": False,
-                "gates": [{"name": "TODO", "parameters": [], "qasm_def": "TODO"}],
+                "gates": [
+                    {"name": "rz", "parameters": ["theta"], "qasm_def": "TODO"},
+                    {"name": "r", "parameters": ["theta", "phi"], "qasm_def": "TODO"},
+                    {"name": "rxx", "parameters": ["theta"], "qasm_def": "TODO"},
+                ],
             }
         )
         self._target = Target(num_qubits=num_qubits)
@@ -160,9 +164,7 @@ class AQTResource(Backend):
 
         if any(
             map(
-                lambda x: isinstance(
-                    x, (qobj_mod.PulseQobj, pulse.Schedule, pulse.ScheduleBlock)
-                ),
+                lambda x: isinstance(x, (qobj_mod.PulseQobj, pulse.Schedule, pulse.ScheduleBlock)),
                 run_input,
             )
         ):
@@ -177,12 +179,11 @@ class AQTResource(Backend):
                     stacklevel=2,
                 )
 
+        # TODO: use the Options validator instead of custom logic here
         shots = options.get("shots", self.options.shots)
 
         if shots > self.configuration().max_shots:
-            raise ValueError(
-                "Number of shots is larger than maximum " "number of shots"
-            )
+            raise ValueError("Number of shots is larger than maximum " "number of shots")
 
         job = aqt_job_new.AQTJobNew(self, circuits=run_input, shots=shots)
         job.submit()

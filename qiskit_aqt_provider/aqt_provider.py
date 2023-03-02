@@ -16,11 +16,13 @@
 import os
 from http import HTTPStatus
 from typing import Dict, List, Optional, Union
+
 import requests
-from tabulate import tabulate
-from qiskit.providers.providerutils import filter_backends
 from qiskit.providers.exceptions import QiskitBackendNotFoundError
-from .aqt_backend import AQTSimulator, AQTSimulatorNoise1, AQTDeviceIbex, AQTDevicePine
+from qiskit.providers.providerutils import filter_backends
+from tabulate import tabulate
+
+from .aqt_backend import AQTDeviceIbex, AQTDevicePine, AQTSimulator, AQTSimulatorNoise1
 from .aqt_resource import AQTResource
 
 # The portal url can be overridden via the AQT_PORTAL_URL environment variable
@@ -50,7 +52,12 @@ class WorkspaceTable:
         for workspace_id, resources in self.data.items():
             for count, resource in enumerate(resources):
                 if count == 0:
-                    line = [workspace_id, resource["id"], resource["name"], resource["type"]]
+                    line = [
+                        workspace_id,
+                        resource["id"],
+                        resource["name"],
+                        resource["type"],
+                    ]
                 else:
                     line = ["", resource["id"], resource["name"], resource["type"]]
                 self.table.append(line)
@@ -66,7 +73,7 @@ class WorkspaceTable:
         return self.data.__iter__()
 
 
-class AQTProvider():
+class AQTProvider:
     """Provider for backends from Alpine Quantum Technologies (AQT).
 
     Typical usage is:
@@ -104,13 +111,17 @@ class AQTProvider():
             self.access_token = env_token
         else:
             self.access_token = access_token
-        self.name = 'aqt_provider'
+        self.name = "aqt_provider"
 
         # Populate the list of AQT backends
-        self.backends = BackendService([AQTSimulator(provider=self),
-                                        AQTSimulatorNoise1(provider=self),
-                                        AQTDeviceIbex(provider=self),
-                                        AQTDevicePine(provider=self)])
+        self.backends = BackendService(
+            [
+                AQTSimulator(provider=self),
+                AQTSimulatorNoise1(provider=self),
+                AQTDeviceIbex(provider=self),
+                AQTDevicePine(provider=self),
+            ]
+        )
 
     def __str__(self):
         return f"<AQTProvider(name={self.name})>"
@@ -153,9 +164,9 @@ class AQTProvider():
         """
         backends = self.backends(name, **kwargs)
         if len(backends) > 1:
-            raise QiskitBackendNotFoundError('More than one backend matches criteria.')
+            raise QiskitBackendNotFoundError("More than one backend matches criteria.")
         if not backends:
-            raise QiskitBackendNotFoundError('No backend matches criteria.')
+            raise QiskitBackendNotFoundError("No backend matches criteria.")
 
         return backends[0]
 
@@ -167,7 +178,7 @@ class AQTProvider():
         return type(self).__name__ == type(other).__name__
 
 
-class BackendService():
+class BackendService:
     """A service class that allows for autocompletion
     of backends from provider.
     """
@@ -195,7 +206,6 @@ class BackendService():
         # pylint: disable=arguments-differ
         backends = self._backends
         if name:
-            backends = [
-                backend for backend in backends if backend.name == name]
+            backends = [backend for backend in backends if backend.name == name]
 
         return filter_backends(backends, filters=filters, **kwargs)

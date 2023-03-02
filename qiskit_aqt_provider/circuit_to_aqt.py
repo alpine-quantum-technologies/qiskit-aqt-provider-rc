@@ -2,7 +2,7 @@
 
 # This code is part of Qiskit.
 #
-# (C) Copyright IBM 2019.
+# (C) Copyright IBM 2019, Alpine Quantum Technologies GmbH 2022.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -30,36 +30,36 @@ def _experiment_to_seq(circuit):
     for instruction in circuit.data:
         inst = instruction[0]
         qubits = [qubit_map[bit] for bit in instruction[1]]
-        if inst.name == 'rx':
-            name = 'X'
-        elif inst.name == 'ry':
-            name = 'Y'
-        elif inst.name == 'rz':
-            name = 'Z'
-        elif inst.name == 'r':
-            name = 'R'
-        elif inst.name == 'rxx':
-            name = 'MS'
-        elif inst.name == 'ms':
-            name = 'MS'
+        if inst.name == "rx":
+            name = "X"
+        elif inst.name == "ry":
+            name = "Y"
+        elif inst.name == "rz":
+            name = "Z"
+        elif inst.name == "r":
+            name = "R"
+        elif inst.name == "rxx":
+            name = "MS"
+        elif inst.name == "ms":
+            name = "MS"
             qubits = []
-        elif inst.name == 'measure':
+        elif inst.name == "measure":
             meas += 1
             continue
-        elif inst.name == 'barrier':
+        elif inst.name == "barrier":
             continue
         else:
             raise Exception(f"Operation '{inst.name}' outside of basis rx, ry, rxx")
         exponent = inst.params[0] / pi
         # hack: split X into X**0.5 . X**0.5
-        if name == 'X' and exponent == 1.0:
+        if name == "X" and exponent == 1.0:
             ops.append((name, float(0.5), qubits))
             ops.append((name, float(0.5), qubits))
         else:
             # (op name, exponent, [qubit index])
             ops.append((name, float(exponent), qubits))
     if not meas:
-        raise ValueError('Circuit must have at least one measurements.')
+        raise ValueError("Circuit must have at least one measurements.")
     return json.dumps(ops)
 
 
@@ -74,9 +74,9 @@ def _experiment_to_aqt_circuit(circuit: QuantumCircuit) -> List[Dict[str, Any]]:
     for instruction in circuit.data:
         inst = instruction[0]
         qubits = [qubit_map[bit] for bit in instruction[1]]
-        if inst.name == 'rz':
+        if inst.name == "rz":
             ops.append({"gate": "RZ", "phi": float(inst.params[0]) / pi, "qubit": qubits[0]})
-        elif inst.name == 'r':
+        elif inst.name == "r":
             ops.append(
                 {
                     "gate": "R",
@@ -85,23 +85,23 @@ def _experiment_to_aqt_circuit(circuit: QuantumCircuit) -> List[Dict[str, Any]]:
                     "qubit": qubits[0],
                 }
             )
-        elif inst.name == 'rxx':
+        elif inst.name == "rxx":
             ops.append(
                 {
                     "gate": "XX",
                     "qubits": qubits[:2],
                 }
             )
-        elif inst.name == 'measure':
+        elif inst.name == "measure":
             # FIXME: we only support measurements at the end
             meas += 1
             continue
-        elif inst.name == 'barrier':
+        elif inst.name == "barrier":
             continue
         else:
             raise Exception(f"Operation '{inst.name}' outside of basis rz, r, rxx")
     if not meas:
-        raise ValueError('Circuit must have at least one measurements.')
+        raise ValueError("Circuit must have at least one measurements.")
     return ops
 
 
@@ -125,10 +125,10 @@ def circuit_to_aqt(circuits, access_token, shots=100):
         circuits = circuits[0]
     seqs = _experiment_to_seq(circuits)
     out_dict = {
-        'data': seqs,
-        'access_token': access_token,
-        'repetitions': shots,
-        'no_qubits': circuits.num_qubits,
+        "data": seqs,
+        "access_token": access_token,
+        "repetitions": shots,
+        "no_qubits": circuits.num_qubits,
     }
     out_json.append(out_dict)
     return out_json
@@ -147,11 +147,8 @@ def circuit_to_aqt_new(circuit: QuantumCircuit, shots: int) -> Dict[str, Any]:
     """
     seqs = _experiment_to_aqt_circuit(circuit)
     out_dict = {
-        'job_type': 'quantum_circuit',
-        'label': "qiskit",
-        'payload': {
-            'repetitions': shots,
-            'quantum_circuit': seqs
-        }
+        "job_type": "quantum_circuit",
+        "label": "qiskit",
+        "payload": {"repetitions": shots, "quantum_circuit": seqs},
     }
     return out_dict

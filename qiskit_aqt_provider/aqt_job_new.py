@@ -16,14 +16,15 @@
 
 import threading
 import uuid
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Set, Union
 
+import numpy as np
 from qiskit import QuantumCircuit
-from qiskit.providers import JobError, JobTimeoutError, JobV1
+from qiskit.providers import JobV1
 from qiskit.providers.jobstatus import JobStatus
-from qiskit.result.models import ExperimentResult, ExperimentResultData
 from qiskit.result.result import Result
 
 from qiskit_aqt_provider import circuit_to_aqt
@@ -95,22 +96,39 @@ class AQTJobNew(JobV1):
 
     def submit(self):
         """Submits a job for execution."""
+        # do not parallelize to guarantee that the order is preserved in the _jobs dict
         for circuit in self.circuits:
             self._submit_single(circuit, self.shots)
 
     def status(self) -> JobStatus:
+        """Query the job's status.
+
+        The job status is aggregated from the status of the individual circuits running
+        on the AQT resource."""
         # update the local job cache
         with ThreadPoolExecutor(thread_name_prefix="status_worker_") as pool:
-            futures = [
-                pool.submit(self._result_single, job_id) for job_id in self._jobs
-            ]
+            futures = [pool.submit(self._status_single, job_id) for job_id in self._jobs]
             wait(futures, timeout=10.0)
 
         return self._aggregate_status()
 
-    def result(self):
+    def result(self) -> Result:
+        """Block until all circuits have been evaluated and return the combined result.
+
+        In case of error, use `AQTJobNew.failed_jobs` to access the error messages of the
+        failed circuit evaluations.
+
+        Returns:
+            The combined result of all circuit evaluations.
+
+        Raises:
+            RuntimeError: at least one circuit evaluation failed or was cancelled.
+        """
         self.wait_for_final_state()  # one of DONE, CANCELLED, ERROR
         agg_status = self._aggregate_status()
+
+        if agg_status is not JobStatus.DONE:
+            raise RuntimeError("An error occurred during at least one circuit evaluation.")
 
         results = []
 
@@ -120,6 +138,9 @@ class AQTJobNew(JobV1):
 
             if isinstance(result, JobFinished):
                 meas_map = _build_memory_mapping(circuit)
+
+                # TODO: understand which classical register is used for the measurement
+                # Take this register's initialization value into account.
                 data["counts"] = _format_counts(result.samples, meas_map)
 
             results.append(
@@ -149,8 +170,18 @@ class AQTJobNew(JobV1):
 
     @property
     def job_ids(self) -> Set[str]:
-        """The AQT API identifiers of all the jobs for this Qiskit job."""
+        """The AQT API identifiers of all the circuits evaluated in this Qiskit job."""
         return set(self._jobs)
+
+    @property
+    def failed_jobs(self) -> Dict[str, str]:
+        """Map of failed job ids to error reports from the API."""
+        with self._jobs_lock:
+            return {
+                job_id: payload.error
+                for job_id, payload in self._jobs.items()
+                if isinstance(payload, JobFailed)
+            }
 
     def _submit_single(self, circuit: QuantumCircuit, shots: int) -> None:
         """Submit a single quantum circuit for execution on the backend.
@@ -167,7 +198,8 @@ class AQTJobNew(JobV1):
         with self._jobs_lock:
             self._jobs[job_id] = JobQueued()
 
-    def _result_single(self, job_id: str) -> None:
+    def _status_single(self, job_id: str) -> None:
+        """Query the status of a single circuit execution. Update the internal life-cycle tracker."""
         payload = self._backend.result(job_id)
         response = payload["response"]
 
@@ -181,11 +213,11 @@ class AQTJobNew(JobV1):
             elif response["status"] == "ongoing":
                 self._jobs[job_id] = JobOngoing()
             else:
-                raise RuntimeError(
-                    f"API returned unknown job status: {response['status']}."
-                )
+                raise RuntimeError(f"API returned unknown job status: {response['status']}.")
 
     def _aggregate_status(self) -> JobStatus:
+        """Aggregate the Qiskit job status from the status of the individual circuit evaluations."""
+
         # aggregate job status from individual circuits
         with self._jobs_lock:
             statuses = [payload.status for payload in self._jobs.values()]
@@ -210,46 +242,159 @@ class AQTJobNew(JobV1):
 
 
 def _build_memory_mapping(circuit: QuantumCircuit) -> Dict[int, int]:
-    qu2cl = {}
-    qubit_map = {}
-    count = 0
+    """Scan the circuit for measurement instructions and collect qubit to classical bits mappings.
 
-    for bit in circuit.qubits:
-        qubit_map[bit] = count
-        count += 1
-    clbit_map = {}
-    count = 0
-    for bit in circuit.clbits:
-        clbit_map[bit] = count
-        count += 1
+    This assumes that the `QuantumRegister` to `ClassicalRegister` mappings are consistent
+    across all measurement operations in the circuit. If this is not the case, the later
+    mappings take precedence.
+
+    Parameters:
+        circuit: the `QuantumCircuit` to analyze.
+
+    Returns:
+        the translation map for all measurement operations in the circuit.
+
+    Examples:
+        >>> qc = QuantumCircuit(2)
+        >>> qc.measure_all()
+        >>> _build_memory_mapping(qc)
+        {0: 0, 1: 1}
+
+        >>> qc = QuantumCircuit(2, 2)
+        >>> _ = qc.measure([0, 1], [1, 0])
+        >>> _build_memory_mapping(qc)
+        {0: 1, 1: 0}
+
+        >>> qc = QuantumCircuit(3, 2)
+        >>> _ = qc.measure([0, 1], [0, 1])
+        >>> _build_memory_mapping(qc)
+        {0: 0, 1: 1}
+
+        >>> qc = QuantumCircuit(4, 6)
+        >>> _ = qc.measure([0, 1, 2, 3], [2, 3, 4, 5])
+        >>> _build_memory_mapping(qc)
+        {0: 2, 1: 3, 2: 4, 3: 5}
+
+        >>> qc = QuantumCircuit(3, 4)
+        >>> qc.measure_all(add_bits=False)
+        >>> _build_memory_mapping(qc)
+        {0: 0, 1: 1, 2: 2}
+
+        >>> qc = QuantumCircuit(3, 3)
+        >>> _ = qc.x(0)
+        >>> _ = qc.measure([0], [2])
+        >>> _ = qc.y(1)
+        >>> _ = qc.measure([1], [1])
+        >>> _ = qc.x(2)
+        >>> _ = qc.measure([2], [0])
+        >>> _build_memory_mapping(qc)
+        {0: 2, 1: 1, 2: 0}
+    """
+    qu2cl: Dict[int, int] = {}
+
     for instruction in circuit.data:
-        if instruction[0].name == "measure":
-            for index, qubit in enumerate(instruction[1]):
-                qu2cl[qubit_map[qubit]] = clbit_map[instruction[2][index]]
+        op = instruction.operation
+        if op.name == "measure":
+            for qubit, clbit in zip(instruction.qubits, instruction.clbits):
+                qu2cl[qubit.index] = clbit.index
+
     return qu2cl
 
 
-def _rearrange_result(shots_results: List[int], qubit_to_bit: Dict[int, int]) -> str:
-    length = max(qubit_to_bit.values()) + 1
-    bin_output = list("0" * length)
-    # convert sample entries to strings and pad the result list with "0" to the number
-    # of classical qbits
-    bin_input = list("".join([str(bit) for bit in shots_results]).ljust(length, "0"))
+def _shot_to_int(
+    fluorescence_states: List[int], qubit_to_bit: Optional[Dict[int, int]] = None
+) -> int:
+    """Format the detected fluorescence states from a single shot as an integer.
 
-    bin_input.reverse()
-    for qu, cl in qubit_to_bit.items():
-        bin_output[cl] = bin_input[qu]
-    return hex(int("".join(bin_output), 2))
+    This follows the Qiskit ordering convention, where bit 0 in the classical register is mapped
+    to bit 0 in the returned integer.
+
+    An optional translation map from the quantum to the classical register can be applied.
+    If provided, the map must be injective (i.e. map all qubits to classical bits).
+
+    Parameters:
+        fluorescence_states: detected fluorescence states for this shot
+        qubit_to_bit: optional translation map from quantum register to classical register positions
+
+    Returns:
+        integral representation of the shot result, with the translation map applied.
+
+    Examples:
+       Without a translation map, the natural mapping is used (n -> n):
+
+        >>> _shot_to_int([1])
+        1
+
+        >>> _shot_to_int([0, 0, 1])
+        4
+
+        >>> _shot_to_int([0, 1, 1])
+        6
+
+        Swap qubits 1 and 2 in the classical register:
+
+        >>> _shot_to_int([0, 0, 1], {0: 0, 1: 2, 2: 1})
+        2
+
+        The map cannot be partial:
+
+        >>> _shot_to_int([0, 0, 1], {1: 2, 2: 1})  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        ValueError: ...
+
+        One can translate into a classical register larger than the
+        qubit register.
+
+        Warning: the classical register is always initialized to 0.
+
+        >>> _shot_to_int([1], {0: 1})
+        2
+
+        >>> _shot_to_int([0, 1, 1], {0: 3, 1: 4, 2: 5}) == (0b110 << 3)
+        True
+    """
+    tr_map = qubit_to_bit or {}
+
+    if tr_map:
+        if set(tr_map.keys()) != set(range(len(fluorescence_states))):
+            raise ValueError("Map must be injective.")
+
+        # allocate a zero-initialized classical register
+        creg = [0] * (max(tr_map.values()) + 1)
+
+        for src_index, dest_index in tr_map.items():
+            creg[dest_index] = fluorescence_states[src_index]
+    else:
+        creg = fluorescence_states.copy()
+
+    return (np.left_shift(1, np.arange(len(creg))) * creg).sum()
 
 
 def _format_counts(
-    samples: List[List[int]], qubit_to_bit: Dict[int, int]
+    samples: List[List[int]], qubit_to_bit: Optional[Dict[int, int]] = None
 ) -> Dict[str, int]:
-    counts = {}
-    for shots_results in samples:
-        h_result = _rearrange_result(shots_results, qubit_to_bit)
-        if h_result not in counts:
-            counts[h_result] = 1
-        else:
-            counts[h_result] += 1
-    return counts
+    """Format all shots results from a circuit evaluation.
+
+    The returned dictionary is compatible with Qiskit's `ExperimentResultData`
+    `counts` field.
+
+    Keys are hexadecimal string representations of the detected states, with the
+    optional `QuantumRegister` to `ClassicalRegister` applied. Values are the occurrences
+    of the keys.
+
+    Parameters:
+        samples: detected qubit fluorescence states for all shots
+        qubit_to_bit: optional quantum to classical register translation map
+
+    Returns:
+        collected counts, for `ExperimentResultData`.
+
+    Examples:
+        >>> _format_counts([[1, 0, 0], [0, 1, 0], [1, 0, 0]])
+        {'0x1': 2, '0x2': 1}
+
+        >>> _format_counts([[1, 0, 0], [0, 1, 0], [1, 0, 0]], {0: 2, 1: 1, 2: 0})
+        {'0x4': 2, '0x2': 1}
+    """
+    return dict(Counter(hex(_shot_to_int(shot, qubit_to_bit)) for shot in samples))
