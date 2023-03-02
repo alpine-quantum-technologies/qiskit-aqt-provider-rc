@@ -26,6 +26,7 @@ from qiskit import QuantumCircuit
 from qiskit.providers import JobV1
 from qiskit.providers.jobstatus import JobStatus
 from qiskit.result.result import Result
+from qiskit.utils.lazy_tester import contextlib
 
 from qiskit_aqt_provider import circuit_to_aqt
 
@@ -317,7 +318,7 @@ def _shot_to_int(
     to bit 0 in the returned integer.
 
     An optional translation map from the quantum to the classical register can be applied.
-    If provided, the map must be injective (i.e. map all qubits to classical bits).
+    If provided, the map must at least map all qubits to classical bits.
 
     Parameters:
         fluorescence_states: detected fluorescence states for this shot
@@ -360,18 +361,25 @@ def _shot_to_int(
 
         >>> _shot_to_int([0, 1, 1], {0: 3, 1: 4, 2: 5}) == (0b110 << 3)
         True
+
+        or with a map larger than the qubit space:
+
+        >>> _shot_to_int([1], {0: 0, 1: 1})
+        1
     """
     tr_map = qubit_to_bit or {}
 
     if tr_map:
-        if set(tr_map.keys()) != set(range(len(fluorescence_states))):
-            raise ValueError("Map must be injective.")
+        if not set(tr_map.keys()) >= set(range(len(fluorescence_states))):
+            raise ValueError("Map must map all measured qubits.")
 
         # allocate a zero-initialized classical register
         creg = [0] * (max(tr_map.values()) + 1)
 
         for src_index, dest_index in tr_map.items():
-            creg[dest_index] = fluorescence_states[src_index]
+            # the translation map could map more than just the measured qubits
+            with contextlib.suppress(IndexError):
+                creg[dest_index] = fluorescence_states[src_index]
     else:
         creg = fluorescence_states.copy()
 
