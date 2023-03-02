@@ -16,10 +16,19 @@
 
 import threading
 import uuid
-from collections import Counter
+from collections import Counter, defaultdict, namedtuple
 from concurrent.futures import ThreadPoolExecutor, wait
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar, Dict, List, Optional, Set, Union
+from typing import (
+    TYPE_CHECKING,
+    ClassVar,
+    DefaultDict,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -156,6 +165,8 @@ class AQTJobNew(JobV1):
                     "data": data,
                     "header": {
                         "memory_slots": circuit.num_clbits,
+                        "creg_sizes": [[reg.name, reg.size] for reg in circuit.cregs],
+                        "qreg_sizes": [[reg.name, reg.size] for reg in circuit.qregs],
                         "name": circuit.name,
                         "metadata": circuit.metadata or {},
                     },
@@ -249,12 +260,12 @@ class AQTJobNew(JobV1):
         return JobStatus.QUEUED
 
 
-def _build_memory_mapping(circuit: QuantumCircuit) -> Dict[int, int]:
+def _build_memory_mapping(circuit: QuantumCircuit) -> Dict[int, Set[int]]:
     """Scan the circuit for measurement instructions and collect qubit to classical bits mappings.
 
-    This assumes that the `QuantumRegister` to `ClassicalRegister` mappings are consistent
-    across all measurement operations in the circuit. If this is not the case, the later
-    mappings take precedence.
+    Qubits can be mapped to multiple classical bits, possibly in different classical registers.
+    The returned map only maps qubits referenced in a `measure` operation in the passed circuit.
+    Qubits not targeted by a `measure` operation will not appear in the returned result.
 
     Parameters:
         circuit: the `QuantumCircuit` to analyze.
@@ -266,27 +277,27 @@ def _build_memory_mapping(circuit: QuantumCircuit) -> Dict[int, int]:
         >>> qc = QuantumCircuit(2)
         >>> qc.measure_all()
         >>> _build_memory_mapping(qc)
-        {0: 0, 1: 1}
+        {0: {0}, 1: {1}}
 
         >>> qc = QuantumCircuit(2, 2)
         >>> _ = qc.measure([0, 1], [1, 0])
         >>> _build_memory_mapping(qc)
-        {0: 1, 1: 0}
+        {0: {1}, 1: {0}}
 
         >>> qc = QuantumCircuit(3, 2)
         >>> _ = qc.measure([0, 1], [0, 1])
         >>> _build_memory_mapping(qc)
-        {0: 0, 1: 1}
+        {0: {0}, 1: {1}}
 
         >>> qc = QuantumCircuit(4, 6)
         >>> _ = qc.measure([0, 1, 2, 3], [2, 3, 4, 5])
         >>> _build_memory_mapping(qc)
-        {0: 2, 1: 3, 2: 4, 3: 5}
+        {0: {2}, 1: {3}, 2: {4}, 3: {5}}
 
         >>> qc = QuantumCircuit(3, 4)
         >>> qc.measure_all(add_bits=False)
         >>> _build_memory_mapping(qc)
-        {0: 0, 1: 1, 2: 2}
+        {0: {0}, 1: {1}, 2: {2}}
 
         >>> qc = QuantumCircuit(3, 3)
         >>> _ = qc.x(0)
@@ -296,29 +307,68 @@ def _build_memory_mapping(circuit: QuantumCircuit) -> Dict[int, int]:
         >>> _ = qc.x(2)
         >>> _ = qc.measure([2], [0])
         >>> _build_memory_mapping(qc)
-        {0: 2, 1: 1, 2: 0}
+        {0: {2}, 1: {1}, 2: {0}}
+
+        5 qubits in two registers:
+
+        >>> from qiskit import QuantumRegister, ClassicalRegister
+        >>> qr0 = QuantumRegister(2)
+        >>> qr1 = QuantumRegister(3)
+        >>> cr = ClassicalRegister(2)
+        >>> qc = QuantumCircuit(qr0, qr1, cr)
+        >>> _ = qc.measure(qr0, cr)
+        >>> _build_memory_mapping(qc)
+        {0: {0}, 1: {1}}
+
+        Multiple mapping of a qubit:
+
+        >>> qc = QuantumCircuit(3, 3)
+        >>> _ = qc.measure([0, 1], [0, 1])
+        >>> _ = qc.measure([0], [2])
+        >>> _build_memory_mapping(qc)
+        {0: {0, 2}, 1: {1}}
     """
-    qu2cl: Dict[int, int] = {}
+    field = namedtuple("field", "offset,size")
+
+    # quantum memory map
+    qregs = {}
+    offset = 0
+    for qreg in circuit.qregs:
+        qregs[qreg] = field(offset, qreg.size)
+        offset += qreg.size
+
+    # classical memory map
+    clregs = {}
+    offset = 0
+    for creg in circuit.cregs:
+        clregs[creg] = field(offset, creg.size)
+        offset += creg.size
+
+    qu2cl: DefaultDict[int, Set[int]] = defaultdict(set)
 
     for instruction in circuit.data:
         operation = instruction.operation
         if operation.name == "measure":
             for qubit, clbit in zip(instruction.qubits, instruction.clbits):
-                qu2cl[qubit.index] = clbit.index
+                qubit_index = qregs[qubit.register].offset + qubit.index
+                clbit_index = clregs[clbit.register].offset + clbit.index
+                qu2cl[qubit_index].add(clbit_index)
 
-    return qu2cl
+    return dict(qu2cl)
 
 
 def _shot_to_int(
-    fluorescence_states: List[int], qubit_to_bit: Optional[Dict[int, int]] = None
+    fluorescence_states: List[int], qubit_to_bit: Optional[Dict[int, Set[int]]] = None
 ) -> int:
     """Format the detected fluorescence states from a single shot as an integer.
 
     This follows the Qiskit ordering convention, where bit 0 in the classical register is mapped
-    to bit 0 in the returned integer.
+    to bit 0 in the returned integer. The first classical register in the original circuit
+    represents the least-significant bits in the interger representation.
 
     An optional translation map from the quantum to the classical register can be applied.
-    If provided, the map must at least map all qubits to classical bits.
+    If given, only the qubits registered in the translation map are present in the return value,
+    at the index given by the translation map.
 
     Parameters:
         fluorescence_states: detected fluorescence states for this shot
@@ -341,45 +391,72 @@ def _shot_to_int(
 
         Swap qubits 1 and 2 in the classical register:
 
-        >>> _shot_to_int([0, 0, 1], {0: 0, 1: 2, 2: 1})
+        >>> _shot_to_int([1, 0, 1], {0: {0}, 1: {2}, 2: {1}})
+        3
+
+        If the map is partial, only the mapped qubits are present in the output:
+
+        >>> _shot_to_int([1, 0, 1], {1: {2}, 2: {1}})
         2
-
-        The map cannot be partial:
-
-        >>> _shot_to_int([0, 0, 1], {1: 2, 2: 1})  # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-        ...
-        ValueError: ...
 
         One can translate into a classical register larger than the
         qubit register.
 
         Warning: the classical register is always initialized to 0.
 
-        >>> _shot_to_int([1], {0: 1})
+        >>> _shot_to_int([1], {0: {1}})
         2
 
-        >>> _shot_to_int([0, 1, 1], {0: 3, 1: 4, 2: 5}) == (0b110 << 3)
+        >>> _shot_to_int([0, 1, 1], {0: {3}, 1: {4}, 2: {5}}) == (0b110 << 3)
         True
 
         or with a map larger than the qubit space:
 
-        >>> _shot_to_int([1], {0: 0, 1: 1})
+        >>> _shot_to_int([1], {0: {0}, 1: {1}})
         1
+
+        Consider the typical example of two quantum registers (the second one contains
+        ancilla qubits) and one classical register:
+
+        >>> from qiskit import QuantumRegister, ClassicalRegister
+        >>> qr_meas = QuantumRegister(2)
+        >>> qr_ancilla = QuantumRegister(3)
+        >>> cr = ClassicalRegister(2)
+        >>> qc = QuantumCircuit(qr_meas, qr_ancilla, cr)
+        >>> _ = qc.measure(qr_meas, cr)
+        >>> tr_map = _build_memory_mapping(qc)
+
+        We assume that a single shot gave the result:
+
+        >>> ancillas = [1, 1, 0]
+        >>> meas = [1, 0]
+
+        Then the corresponding output is 0b01 (measurement qubits mapped straight
+        to the classical register of length 2):
+
+        >>> _shot_to_int(meas + ancillas, tr_map) == 0b01
+        True
+
+        One can overwrite qr_meas[1] with qr_ancilla[0]:
+
+        >>> _ = qc.measure(qr_ancilla[0], cr[1])
+        >>> tr_map = _build_memory_mapping(qc)
+        >>> _shot_to_int(meas + ancillas, tr_map) == 0b11
+        True
     """
     tr_map = qubit_to_bit or {}
 
     if tr_map:
-        if not set(tr_map.keys()) >= set(range(len(fluorescence_states))):
-            raise ValueError("Map must map all measured qubits.")
-
         # allocate a zero-initialized classical register
-        creg = [0] * (max(tr_map.values()) + 1)
+        # TODO: support pre-initialized classical registers
+        clbits = max(max(d) for d in tr_map.values()) + 1
+        creg = [0] * clbits
 
-        for src_index, dest_index in tr_map.items():
+        for src_index, dest_indices in tr_map.items():
             # the translation map could map more than just the measured qubits
             with contextlib.suppress(IndexError):
-                creg[dest_index] = fluorescence_states[src_index]
+                for dest_index in dest_indices:
+                    creg[dest_index] = fluorescence_states[src_index]
     else:
         creg = fluorescence_states.copy()
 
@@ -387,7 +464,7 @@ def _shot_to_int(
 
 
 def _format_counts(
-    samples: List[List[int]], qubit_to_bit: Optional[Dict[int, int]] = None
+    samples: List[List[int]], qubit_to_bit: Optional[Dict[int, Set[int]]] = None
 ) -> Dict[str, int]:
     """Format all shots results from a circuit evaluation.
 
@@ -409,7 +486,7 @@ def _format_counts(
         >>> _format_counts([[1, 0, 0], [0, 1, 0], [1, 0, 0]])
         {'0x1': 2, '0x2': 1}
 
-        >>> _format_counts([[1, 0, 0], [0, 1, 0], [1, 0, 0]], {0: 2, 1: 1, 2: 0})
+        >>> _format_counts([[1, 0, 0], [0, 1, 0], [1, 0, 0]], {0: {2}, 1: {1}, 2: {0}})
         {'0x4': 2, '0x2': 1}
     """
     return dict(Counter(hex(_shot_to_int(shot, qubit_to_bit)) for shot in samples))
