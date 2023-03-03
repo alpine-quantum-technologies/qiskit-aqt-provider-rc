@@ -13,7 +13,6 @@ classifiers=[
         "Operating System :: MacOS",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -37,16 +36,16 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.8"
 
-qiskit-terra = ">=0.19.2"
-requests = ">=2.19"
-typing-extensions = ">=3.6.2"
+qiskit-terra = "^0.23.2"
+requests = "^2.19"
+typing-extensions = "^4.0.0"
 
 [tool.poetry.dev-dependencies]
-qiskit-terra = {version = ">=0.19.2", extras = ["visualization"]}
+qiskit-terra = {version = ">=0.23.2", extras = ["visualization"]}
 jupyter-sphinx = "^0.4.0"
-mypy = "=0.981"
+mypy = "=1.0.1"
 poethepoet = "^0.18.1"
-pylint = "=2.13"
+pylint = "2.16.*"
 pytest = ">=7"
 qiskit-sphinx-theme = ">=1.7.0"
 sphinx = ">=5.3"

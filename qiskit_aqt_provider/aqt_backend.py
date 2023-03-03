@@ -17,19 +17,19 @@
 import warnings
 
 import requests
-
 from qiskit import qobj as qobj_mod
-from qiskit.circuit.parameter import Parameter
-from qiskit.circuit.library import RXGate, RYGate, RZGate, RGate, RXXGate, MSGate
+from qiskit.circuit.library import (MSGate, RGate, RXGate, RXXGate, RYGate,
+                                    RZGate)
 from qiskit.circuit.measure import Measure
+from qiskit.circuit.parameter import Parameter
+from qiskit.exceptions import QiskitError
 from qiskit.providers import BackendV2 as Backend
 from qiskit.providers import Options
-from qiskit.transpiler import Target
 from qiskit.providers.models import BackendConfiguration
-from qiskit.exceptions import QiskitError
+from qiskit.transpiler import Target
 
-from . import aqt_job
-from . import circuit_to_aqt
+from . import aqt_job, circuit_to_aqt
+from .constants import REQUESTS_TIMEOUT
 
 
 class AQTSimulator(Backend):
@@ -83,7 +83,7 @@ class AQTSimulator(Backend):
                       DeprecationWarning)
         return self._configuration
 
-    def properties(self):  # pylint: disable=no-self-use
+    def properties(self):
         warnings.warn("The properties() method is deprecated and will be removed in a "
                       "future release. Instead you should access these attributes directly "
                       "off the object or via the .target attribute. You can refer to qiskit "
@@ -121,11 +121,13 @@ class AQTSimulator(Backend):
             "Ocp-Apim-Subscription-Key": self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.put(self.url, data=aqt_json, headers=header)
+        res = requests.put(self.url, data=aqt_json, headers=header, timeout=REQUESTS_TIMEOUT)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
-            raise Exception
+            raise RuntimeError(
+                "Received invalid response to submission request: 'id' field is missing."
+            )
         job = aqt_job.AQTJob(self, response['id'], qobj=run_input)
         return job
 
@@ -180,7 +182,7 @@ class AQTSimulatorNoise1(Backend):
                       DeprecationWarning)
         return self._configuration
 
-    def properties(self):  # pylint: disable=no-self-use
+    def properties(self):
         warnings.warn("The properties() method is deprecated and will be removed in a "
                       "future release. Instead you should access these attributes directly "
                       "off the object or via the .target attribute. You can refer to qiskit "
@@ -218,11 +220,13 @@ class AQTSimulatorNoise1(Backend):
             "Ocp-Apim-Subscription-Key": self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.put(self.url, data=aqt_json, headers=header)
+        res = requests.put(self.url, data=aqt_json, headers=header, timeout=REQUESTS_TIMEOUT)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
-            raise Exception
+            raise RuntimeError(
+                "Received invalid response to submission request: 'id' field is missing."
+            )
         job = aqt_job.AQTJob(self, response['id'], qobj=run_input)
         return job
 
@@ -273,7 +277,7 @@ class AQTDeviceIbex(Backend):
                       DeprecationWarning)
         return self._configuration
 
-    def properties(self):  # pylint: disable=no-self-use
+    def properties(self):
         warnings.warn("The properties() method is deprecated and will be removed in a "
                       "future release. Instead you should access these attributes directly "
                       "off the object or via the .target attribute. You can refer to qiskit "
@@ -311,11 +315,13 @@ class AQTDeviceIbex(Backend):
             "Ocp-Apim-Subscription-Key": self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.put(self.url, data=aqt_json, headers=header)
+        res = requests.put(self.url, data=aqt_json, headers=header, timeout=REQUESTS_TIMEOUT)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
-            raise Exception
+            raise RuntimeError(
+                "Received invalid response to submission request: 'id' field is missing."
+            )
         job = aqt_job.AQTJob(self, response['id'], qobj=run_input)
         return job
 
@@ -366,7 +372,7 @@ class AQTDevicePine(Backend):
                       DeprecationWarning)
         return self._configuration
 
-    def properties(self):  # pylint: disable=no-self-use
+    def properties(self):
         warnings.warn("The properties() method is deprecated and will be removed in a "
                       "future release. Instead you should access these attributes directly "
                       "off the object or via the .target attribute. You can refer to qiskit "
@@ -404,10 +410,12 @@ class AQTDevicePine(Backend):
             "Ocp-Apim-Subscription-Key": self._provider.access_token,
             "SDK": "qiskit"
         }
-        res = requests.put(self.url, data=aqt_json, headers=header)
+        res = requests.put(self.url, data=aqt_json, headers=header, timeout=REQUESTS_TIMEOUT)
         res.raise_for_status()
         response = res.json()
         if 'id' not in response:
-            raise Exception
+            raise RuntimeError(
+                "Received invalid response to submission request: 'id' field is missing."
+            )
         job = aqt_job.AQTJob(self, response['id'], qobj=run_input)
         return job
