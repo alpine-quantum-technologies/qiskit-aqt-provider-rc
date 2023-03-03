@@ -98,9 +98,7 @@ class AQTResource(Backend):
             The unique identifier for the submitted job.
         """
         url = f"{self.url}/submit/{self._workspace}/{self._resource['id']}"
-        req = requests.post(
-            url, json=payload, headers=self.headers, timeout=REQUESTS_TIMEOUT
-        )
+        req = requests.post(url, json=payload, headers=self.headers, timeout=REQUESTS_TIMEOUT)
         req.raise_for_status()
         response = req.json()
 
@@ -130,22 +128,26 @@ class AQTResource(Backend):
 
     def configuration(self):
         warnings.warn(
-            "The configuration() method is deprecated and will be removed in a "
-            "future release. Instead you should access these attributes directly "
-            "off the object or via the .target attribute. You can refer to qiskit "
-            "backend interface transition guide for the exact changes: "
-            "https://qiskit.org/documentation/apidoc/providers.html#backendv1-backendv2",
+            (
+                "The configuration() method is deprecated and will be removed in a "
+                "future release. Instead you should access these attributes directly "
+                "off the object or via the .target attribute. You can refer to qiskit "
+                "backend interface transition guide for the exact changes: "
+                "https://qiskit.org/documentation/apidoc/providers.html#backendv1-backendv2"
+            ),
             DeprecationWarning,
         )
         return self._configuration
 
     def properties(self):
         warnings.warn(
-            "The properties() method is deprecated and will be removed in a "
-            "future release. Instead you should access these attributes directly "
-            "off the object or via the .target attribute. You can refer to qiskit "
-            "backend interface transition guide for the exact changes: "
-            "https://qiskit.org/documentation/apidoc/providers.html#backendv1-backendv2",
+            (
+                "The properties() method is deprecated and will be removed in a "
+                "future release. Instead you should access these attributes directly "
+                "off the object or via the .target attribute. You can refer to qiskit "
+                "backend interface transition guide for the exact changes: "
+                "https://qiskit.org/documentation/apidoc/providers.html#backendv1-backendv2"
+            ),
             DeprecationWarning,
         )
 
@@ -167,9 +169,7 @@ class AQTResource(Backend):
 
         if any(
             map(
-                lambda x: isinstance(
-                    x, (qobj_mod.PulseQobj, pulse.Schedule, pulse.ScheduleBlock)
-                ),
+                lambda x: isinstance(x, (qobj_mod.PulseQobj, pulse.Schedule, pulse.ScheduleBlock)),
                 run_input,
             )
         ):

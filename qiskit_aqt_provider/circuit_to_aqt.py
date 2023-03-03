@@ -19,6 +19,7 @@ from numpy import pi
 from qiskit import QuantumCircuit
 
 
+# pylint: disable-next=too-many-branches
 def _experiment_to_seq(circuit):
     count = 0
     qubit_map = {}
@@ -75,9 +76,7 @@ def _experiment_to_aqt_circuit(circuit: QuantumCircuit) -> List[Dict[str, Any]]:
         inst = instruction[0]
         qubits = [qubit_map[bit] for bit in instruction[1]]
         if inst.name == "rz":
-            ops.append(
-                {"gate": "RZ", "phi": float(inst.params[0]) / pi, "qubit": qubits[0]}
-            )
+            ops.append({"gate": "RZ", "phi": float(inst.params[0]) / pi, "qubit": qubits[0]})
         elif inst.name == "r":
             ops.append(
                 {

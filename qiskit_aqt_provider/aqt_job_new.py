@@ -117,9 +117,7 @@ class AQTJobNew(JobV1):
         on the AQT resource."""
         # update the local job cache
         with ThreadPoolExecutor(thread_name_prefix="status_worker_") as pool:
-            futures = [
-                pool.submit(self._status_single, job_id) for job_id in self._jobs
-            ]
+            futures = [pool.submit(self._status_single, job_id) for job_id in self._jobs]
             wait(futures, timeout=10.0)
 
         return self._aggregate_status()
@@ -221,9 +219,7 @@ class AQTJobNew(JobV1):
             elif response["status"] == "ongoing":
                 self._jobs[job_id] = JobOngoing()
             else:
-                raise RuntimeError(
-                    f"API returned unknown job status: {response['status']}."
-                )
+                raise RuntimeError(f"API returned unknown job status: {response['status']}.")
 
     def _aggregate_status(self) -> JobStatus:
         """Aggregate the Qiskit job status from the status of the individual circuit evaluations."""
