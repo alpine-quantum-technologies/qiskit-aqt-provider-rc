@@ -18,7 +18,8 @@ import setuptools
 requirements = [
     "requests>=2.19",
     "qiskit-terra>=0.19.2",
-    "typing-extensions>=3.6.2"
+    "typing-extensions>=3.6.2",
+    "tabulate>=0.9.0"
 ]
 
 PACKAGES = setuptools.find_packages(exclude=["test*"])
@@ -27,11 +28,11 @@ version_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "qiskit_aqt_provider", "VERSION.txt")
 )
 
-with open(version_path, "r") as fd:
+with open(version_path, encoding="utf8") as fd:
     version = fd.read().rstrip()
 
 README_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), "README.md")
-with open(README_PATH) as readme_file:
+with open(README_PATH, encoding="utf8") as readme_file:
     README = readme_file.read()
 
 setuptools.setup(
