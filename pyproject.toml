@@ -84,6 +84,7 @@ disable = [
     "duplicate-code",  # too verbose
     "wrong-import-order",  # isort
     "ungrouped-imports",  # isort
+    "protected-access",  # too annoying
 ]
 
 [tool.pylint."REPORTS"]
