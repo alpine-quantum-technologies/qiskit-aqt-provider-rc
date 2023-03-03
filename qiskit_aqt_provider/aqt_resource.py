@@ -30,6 +30,7 @@ from qiskit.providers.models import BackendConfiguration
 from qiskit.transpiler import Target
 
 from . import aqt_job_new
+from .constants import REQUESTS_TIMEOUT
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -121,7 +122,7 @@ class AQTResource(Backend):
             Full returned payload.
         """
         url = f"{self.url}/result/{job_id}"
-        req = requests.get(url, headers=self.headers)
+        req = requests.get(url, headers=self.headers, timeout=REQUESTS_TIMEOUT)
         req.raise_for_status()
         return req.json()
 

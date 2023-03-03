@@ -24,6 +24,7 @@ from tabulate import tabulate
 
 from .aqt_backend import AQTDeviceIbex, AQTDevicePine, AQTSimulator, AQTSimulatorNoise1
 from .aqt_resource import AQTResource
+from .constants import REQUESTS_TIMEOUT
 
 # The portal url can be overridden via the AQT_PORTAL_URL environment variable
 
@@ -107,7 +108,9 @@ class AQTProvider:
         if access_token is None:
             env_token = os.environ.get("AQT_TOKEN")
             if env_token is None:
-                raise ValueError("No access token provided. Use 'AQT_TOKEN' environment variable.")
+                raise ValueError(
+                    "No access token provided. Use 'AQT_TOKEN' environment variable."
+                )
             self.access_token = env_token
         else:
             self.access_token = access_token
@@ -131,7 +134,9 @@ class AQTProvider:
 
     def workspaces(self):
         headers = {"Authorization": f"Bearer {self.access_token}", "SDK": "qiskit"}
-        res = requests.get(f"{self.portal_url}/workspaces", headers=headers)
+        res = requests.get(
+            f"{self.portal_url}/workspaces", headers=headers, timeout=REQUESTS_TIMEOUT
+        )
         if res.status_code == HTTPStatus.OK:
             return WorkspaceTable(res.json())
         return WorkspaceTable([])
@@ -147,7 +152,9 @@ class AQTProvider:
                 api_resource = resource_data
                 break
         else:
-            raise ValueError(f"Resource '{resource}' does not exist in workspace '{workspace}'.")
+            raise ValueError(
+                f"Resource '{resource}' does not exist in workspace '{workspace}'."
+            )
 
         return AQTResource(self, workspace, api_resource)
 

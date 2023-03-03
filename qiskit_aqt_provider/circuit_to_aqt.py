@@ -49,7 +49,7 @@ def _experiment_to_seq(circuit):
         elif inst.name == "barrier":
             continue
         else:
-            raise Exception(f"Operation '{inst.name}' outside of basis rx, ry, rxx")
+            raise ValueError(f"Operation '{inst.name}' outside of basis rx, ry, rxx")
         exponent = inst.params[0] / pi
         # hack: split X into X**0.5 . X**0.5
         if name == "X" and exponent == 1.0:
@@ -75,7 +75,9 @@ def _experiment_to_aqt_circuit(circuit: QuantumCircuit) -> List[Dict[str, Any]]:
         inst = instruction[0]
         qubits = [qubit_map[bit] for bit in instruction[1]]
         if inst.name == "rz":
-            ops.append({"gate": "RZ", "phi": float(inst.params[0]) / pi, "qubit": qubits[0]})
+            ops.append(
+                {"gate": "RZ", "phi": float(inst.params[0]) / pi, "qubit": qubits[0]}
+            )
         elif inst.name == "r":
             ops.append(
                 {
@@ -99,7 +101,7 @@ def _experiment_to_aqt_circuit(circuit: QuantumCircuit) -> List[Dict[str, Any]]:
         elif inst.name == "barrier":
             continue
         else:
-            raise Exception(f"Operation '{inst.name}' outside of basis rz, r, rxx")
+            raise ValueError(f"Operation '{inst.name}' outside of basis rz, r, rxx")
     if not meas:
         raise ValueError("Circuit must have at least one measurements.")
     return ops
@@ -121,7 +123,7 @@ def circuit_to_aqt(circuits, access_token, shots=100):
     out_json = []
     if isinstance(circuits, list):
         if len(circuits) > 1:
-            raise Exception
+            raise ValueError("Lists of circuits are not supported.")
         circuits = circuits[0]
     seqs = _experiment_to_seq(circuits)
     out_dict = {
@@ -146,6 +148,7 @@ def circuit_to_aqt_new(circuit: QuantumCircuit, shots: int) -> Dict[str, Any]:
         The corresponding circuit execution request payload.
     """
     seqs = _experiment_to_aqt_circuit(circuit)
+
     out_dict = {
         "job_type": "quantum_circuit",
         "label": "qiskit",
