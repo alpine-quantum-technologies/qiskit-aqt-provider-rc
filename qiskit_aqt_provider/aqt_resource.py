@@ -98,7 +98,9 @@ class AQTResource(Backend):
             The unique identifier for the submitted job.
         """
         url = f"{self.url}/submit/{self._workspace}/{self._resource['id']}"
-        req = requests.post(url, json=payload, headers=self.headers)
+        req = requests.post(
+            url, json=payload, headers=self.headers, timeout=REQUESTS_TIMEOUT
+        )
         req.raise_for_status()
         response = req.json()
 
