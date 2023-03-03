@@ -127,22 +127,16 @@ class AQTJobNew(JobV1):
     def result(self) -> Result:
         """Block until all circuits have been evaluated and return the combined result.
 
+        Success or error is signalled by the `success` field in the returned Result instance.
+
         In case of error, use `AQTJobNew.failed_jobs` to access the error messages of the
         failed circuit evaluations.
 
         Returns:
             The combined result of all circuit evaluations.
-
-        Raises:
-            RuntimeError: at least one circuit evaluation failed or was cancelled.
         """
         self.wait_for_final_state()  # one of DONE, CANCELLED, ERROR
         agg_status = self._aggregate_status()
-
-        if agg_status is not JobStatus.DONE:
-            raise RuntimeError(
-                "An error occurred during at least one circuit evaluation."
-            )
 
         results = []
 
@@ -152,9 +146,6 @@ class AQTJobNew(JobV1):
 
             if isinstance(result, JobFinished):
                 meas_map = _build_memory_mapping(circuit)
-
-                # TODO: understand which classical register is used for the measurement
-                # Take this register's initialization value into account.
                 data["counts"] = _format_counts(result.samples, meas_map)
 
             results.append(
