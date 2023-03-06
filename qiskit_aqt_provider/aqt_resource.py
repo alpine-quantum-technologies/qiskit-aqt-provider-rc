@@ -161,6 +161,9 @@ class AQTResource(Backend):
     def _default_options(cls):
         return Options(shots=100)
 
+    def get_translation_stage_plugin(self) -> str:
+        return "aqt"
+
     def run(self, run_input: Union[QuantumCircuit, List[QuantumCircuit]], **options):
         if not isinstance(run_input, list):
             run_input = [run_input]

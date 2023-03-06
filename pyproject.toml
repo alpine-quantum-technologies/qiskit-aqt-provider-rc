@@ -33,6 +33,9 @@ include = [
     "README.md"
 ]
 
+[tool.poetry.plugins."qiskit.transpiler.translation"]
+aqt = "qiskit_aqt_provider.transpiler_plugin:AQTTranslationPlugin"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 
