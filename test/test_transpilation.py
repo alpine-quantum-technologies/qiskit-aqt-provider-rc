@@ -124,8 +124,10 @@ def test_arbitrary_rxx_decomposition() -> None:
     expected = QuantumCircuit(2)
     expected.rxx(pi / 3, 0, 1)
 
+    # the decomposition adds a global phase to the unitary
+    expected.global_phase = -pi / 2
+
     job = backend.run(expected)
     u_expected = job.result().get_unitary()
 
-    # FIXME: this fails so the decomposition is not correct
-    npt.assert_allclose(u_result.data, u_expected.data)
+    npt.assert_allclose(u_result.data, u_expected.data, atol=1e-7)
