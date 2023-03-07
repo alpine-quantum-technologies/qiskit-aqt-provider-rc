@@ -78,6 +78,9 @@ profile = "black"
 [tool.pylint.BASIC]
 good-names = [
     "qc",  # quantum circuit
+    "qr",  # quantum register
+    "q0",  # qubit 0
+    "q1",  # qubit 1
 ]
 
 [tool.pylint."MESSAGES CONTROL"]

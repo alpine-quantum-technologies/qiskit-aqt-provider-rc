@@ -78,7 +78,6 @@ class AQTResource(Backend):
         )
         self._target = Target(num_qubits=num_qubits)
         theta = Parameter("θ")
-        phi = Parameter("ϕ")
         lam = Parameter("λ")
         # configure the transpiler to use RX/RZ/RXX
         # the custom scheduling pass rewrites RX to R to comply to the Arnica API format.
