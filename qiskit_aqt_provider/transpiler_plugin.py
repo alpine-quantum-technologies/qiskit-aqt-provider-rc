@@ -55,9 +55,9 @@ class AQTSchedulingPlugin(PassManagerStagePlugin):
 
 
 def arbitrary_rxx_as_xx(theta: float, q0: Qubit, q1: Qubit) -> QuantumCircuit:
-    """Quantum circuit equivalent to Rxx(theta) on q0,q1 in terms of Rxx(π/2), 
+    """Quantum circuit equivalent to Rxx(theta) on q0,q1 in terms of Rxx(π/2),
     up to a global phase."""
-    
+
     qr = {q0.register, q1.register}
     qc = QuantumCircuit(*qr)
     qc.rx(-math.pi, q0)
