@@ -42,7 +42,7 @@ class AQTSchedulingPlugin(PassManagerStagePlugin):
     def pass_manager(
         self, pass_manager_config: PassManagerConfig, optimization_level: Optional[int] = None
     ) -> PassManager:
-        passes: list[BasePass] = [
+        passes: List[BasePass] = [
             # The Qiskit Target declares RX/RZ as basis gates.
             # This allows decomposing any run of rotations into the ZXZ form, taking
             # advantage of the free Z rotations.
