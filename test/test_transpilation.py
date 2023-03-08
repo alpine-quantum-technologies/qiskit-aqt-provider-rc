@@ -14,9 +14,10 @@ from math import pi
 
 import numpy.testing as npt
 import pytest
-from qiskit import Aer, QuantumCircuit, transpile
+from qiskit import QuantumCircuit, transpile
 from qiskit.circuit.quantumcircuit import QuantumRegister
 from qiskit.providers import Provider
+from qiskit_aer import AerSimulator
 
 from qiskit_aqt_provider.aqt_resource import AQTResource
 from qiskit_aqt_provider.transpiler_plugin import arbitrary_rxx_as_xx
@@ -46,7 +47,7 @@ def dummy_resource() -> AQTResource:
     ],
 )
 def test_rx_wrap_angle(angle: float, expected_angle: float) -> None:
-    """Check that transpile rotation gate angles are wrapper to [-π,π]."""
+    """Check that transpiled rotation gate angles are wrapped to [-π,π]."""
     qc = QuantumCircuit(1)
     qc.rx(angle, 0)
 
@@ -111,23 +112,27 @@ def test_decompose_rxx_as_xx_simple() -> None:
     assert expected == result, msg
 
 
-def test_arbitrary_rxx_decomposition() -> None:
-    backend = Aer.get_backend("unitary_simulator")
+@pytest.mark.parametrize("theta", [pi / 2, pi / 3, pi / 4, -pi / 3, -pi / 4])
+def test_arbitrary_rxx_decomposition(theta: float) -> None:
+    """Check that `arbitrary_rxx_as_xx(theta)` returns a circuit equivalent
+    to `rxx(theta)` up to a global phase."""
+    backend = AerSimulator(method="unitary")
 
     qr = QuantumRegister(2)
     q0, q1 = qr._bits
-    qc = arbitrary_rxx_as_xx(pi / 3, q0, q1)
+    qc = arbitrary_rxx_as_xx(theta, q0, q1)
+    qc.save_state()
 
     job = backend.run(qc)
-    u_result = job.result().get_unitary()
+    u_result = job.result().get_unitary(0)
 
     expected = QuantumCircuit(2)
-    expected.rxx(pi / 3, 0, 1)
-
     # the decomposition adds a global phase to the unitary
     expected.global_phase = -pi / 2
+    expected.rxx(theta, 0, 1)
+    expected.save_state()
 
     job = backend.run(expected)
-    u_expected = job.result().get_unitary()
+    u_expected = job.result().get_unitary(0)
 
     npt.assert_allclose(u_result.data, u_expected.data, atol=1e-7)
