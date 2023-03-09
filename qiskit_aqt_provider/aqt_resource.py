@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
+import os
 import sys
 import warnings
 from math import pi
@@ -253,6 +254,11 @@ class OfflineSimulatorResource(AQTResource):
         self.simulator = AerSimulator(method="statevector")
 
     def submit(self, circuit: QuantumCircuit, shots: int) -> str:
+        if "PYTEST_CURRENT_TEST" in os.environ:
+            # in tests, convert the circuit to the AQT wire format
+            # even if it's not necessary, such that we check that it's possible.
+            _ = circuit_to_aqt_new(circuit, shots=shots)
+
         job = self.simulator.run(circuit, shots=shots)
         self.jobs[job.job_id()] = job
         return job.job_id()
