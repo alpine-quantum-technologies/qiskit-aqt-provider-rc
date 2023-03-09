@@ -61,6 +61,7 @@ class WorkspaceTable:
 
         @classmethod
         def resources(cls) -> Iterator[ApiResource]:
+            """Offline simulator resources."""
             for key in vars(cls):
                 if not key.startswith("__") and key != "resources":
                     resource_id, resource_name = getattr(cls, key)
@@ -85,6 +86,7 @@ class WorkspaceTable:
         if not self._workspaces:
             self._workspaces["default"] = list(WorkspaceTable.OfflineSimulators.resources())
 
+        self.headers = ["Workspace ID", "Resource ID", "Description", "Resource type"]
         self.table = []
         for workspace_id, resources in self._workspaces.items():
             for count, resource in enumerate(resources):
@@ -108,8 +110,11 @@ class WorkspaceTable:
         return self._workspaces.get(workspace_id, [])
 
     def __str__(self) -> str:
-        headers = ["Workspace ID", "Resource ID", "Description", "Resource type"]
-        return tabulate(self.table, headers=headers, tablefmt="fancy_grid")
+        return tabulate(self.table, headers=self.headers, tablefmt="fancy_grid")
+
+    def _repr_html_(self) -> str:
+        """HTML representation (for IPython)."""
+        return tabulate(self.table, headers=self.headers, tablefmt="html")
 
     def __iter__(self):
         return self._workspaces.__iter__()
