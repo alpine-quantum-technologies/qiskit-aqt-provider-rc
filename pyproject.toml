@@ -33,6 +33,12 @@ include = [
     "README.md"
 ]
 
+[tool.poetry.plugins."qiskit.transpiler.scheduling"]
+aqt = "qiskit_aqt_provider.transpiler_plugin:AQTSchedulingPlugin"
+
+[tool.poetry.plugins."qiskit.transpiler.translation"]
+aqt = "qiskit_aqt_provider.transpiler_plugin:AQTTranslationPlugin"
+
 [tool.poetry.dependencies]
 python = "^3.8"
 
@@ -73,6 +79,9 @@ profile = "black"
 [tool.pylint.BASIC]
 good-names = [
     "qc",  # quantum circuit
+    "qr",  # quantum register
+    "q0",  # qubit 0
+    "q1",  # qubit 1
 ]
 
 [tool.pylint."MESSAGES CONTROL"]
