@@ -27,6 +27,8 @@ from qiskit.providers import Options
 from qiskit.providers.models import BackendConfiguration
 from qiskit.transpiler import Target
 
+from qiskit_aqt_provider.circuit_to_aqt import circuit_to_aqt_new
+
 from . import aqt_job_new
 from .constants import REQUESTS_TIMEOUT
 
@@ -86,15 +88,18 @@ class AQTResource(Backend):
         self._target.add_instruction(Measure())
         self.options.set_validator("shots", (1, 200))
 
-    def submit(self, payload: Dict[str, Any]) -> str:
+    def submit(self, circuit: QuantumCircuit, shots: int) -> str:
         """Submit a circuit.
 
         Parameters:
-            payload: AQT Circuit API payload
+            circuit: quantum circuit to execute on the backend
+            shots: number repetitions of the circuit
 
         Returns:
             The unique identifier for the submitted job.
         """
+        payload = circuit_to_aqt_new(circuit, shots=shots)
+
         url = f"{self.url}/submit/{self._workspace}/{self._resource['id']}"
         req = requests.post(url, json=payload, headers=self.headers, timeout=REQUESTS_TIMEOUT)
         req.raise_for_status()
