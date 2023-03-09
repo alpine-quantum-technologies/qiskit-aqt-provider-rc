@@ -13,8 +13,7 @@
 
 import itertools
 import os
-from collections.abc import Iterable
-from typing import Dict, Final, Iterator, List, Optional, Set
+from typing import Dict, Final, Iterable, Iterator, List, Optional, Set
 
 import requests
 from qiskit.providers.exceptions import QiskitBackendNotFoundError
