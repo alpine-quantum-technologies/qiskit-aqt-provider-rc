@@ -177,6 +177,10 @@ class AQTProvider:
 
     def workspaces(self) -> WorkspaceTable:
         """Pretty-printable list of workspaces and accessible resources."""
+        if os.environ.get("CI"):
+            # don't attempt to connect to the AQT Arnica service when running CI tests
+            return WorkspaceTable([])
+
         headers = {"Authorization": f"Bearer {self.access_token}", "SDK": "qiskit"}
         try:
             res = requests.get(
