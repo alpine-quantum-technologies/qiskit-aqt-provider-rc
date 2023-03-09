@@ -26,6 +26,7 @@ from qiskit.providers import BackendV2 as Backend
 from qiskit.providers import Options
 from qiskit.providers.models import BackendConfiguration
 from qiskit.transpiler import Target
+from qiskit_aer import AerJob, AerSimulator
 
 from qiskit_aqt_provider.circuit_to_aqt import circuit_to_aqt_new
 
@@ -196,3 +197,78 @@ class AQTResource(Backend):
         job = aqt_job_new.AQTJobNew(self, circuits=run_input, shots=shots)
         job.submit()
         return job
+
+
+def qubit_states_from_int(state: int, num_qubits: int) -> List[int]:
+    """Convert the Qiskit state representation to the AQT states samples one.
+
+    Args:
+        state: Qiskit quantum register state representation
+        num_qubits: number of qubits in the register.
+
+    Returns:
+        AQT qubit states representation.
+
+    Raises:
+        ValueError: the passed state is too large for the passed register size.
+
+    Examples:
+        >>> qubit_states_from_int(0, 3)
+        [0, 0, 0]
+
+        >>> qubit_states_from_int(0b11, 3)
+        [1, 1, 0]
+
+        >>> qubit_states_from_int(123, 7)
+        [1, 1, 0, 1, 1, 1, 1]
+
+        >>> qubit_states_from_int(123, 3)  # doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        ValueError: Cannot represent state=123 on num_qubits=3.
+    """
+    if state.bit_length() > num_qubits:
+        raise ValueError(f"Cannot represent {state=} on {num_qubits=}.")
+    return [(state >> qubit) & 1 for qubit in range(num_qubits)]
+
+
+class OfflineSimulatorResource(AQTResource):
+    """AQT-compatible offline simulator resource that uses the Qiskit-Aer backend."""
+
+    def __init__(self, provider, workspace: str, resource: ApiResource) -> None:
+        if resource["type"] != "offline_simulator":
+            raise ValueError(f"Cannot instantiate an OfflineSimulatorResource for {resource=}")
+
+        # TODO: also support a noisy simulator
+        super().__init__(provider, workspace, resource)
+
+        self.jobs: Dict[str, AerJob] = {}
+        self.simulator = AerSimulator(method="statevector")
+
+    def submit(self, circuit: QuantumCircuit, shots: int) -> str:
+        job = self.simulator.run(circuit, shots=shots)
+        self.jobs[job.job_id()] = job
+        return job.job_id()
+
+    def result(self, job_id: str) -> Dict[str, Any]:
+        qiskit_result = self.jobs[job_id].result()
+        counts = qiskit_result.data()["counts"]
+        num_qubits = qiskit_result.results[0].header.n_qubits
+        samples = []
+        for hex_state, occurences in counts.items():
+            samples.extend(
+                [qubit_states_from_int(int(hex_state, 16), num_qubits) for _ in range(occurences)]
+            )
+        return {
+            "job": {
+                "job_type": "quantum_circuit",
+                "label": "qiskit",
+                "job_id": job_id,
+                "resource_id": self._resource["id"],
+                "workspace_id": self._workspace,
+            },
+            "response": {
+                "status": "finished",
+                "result": samples,
+            },
+        }

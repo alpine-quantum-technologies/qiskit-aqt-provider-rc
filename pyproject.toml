@@ -95,6 +95,9 @@ disable = [
 reports = false
 score = false
 
+[tool.pyright]
+exclude = ["test/test_execution.py"]
+
 [tool.poe.tasks]
 test = "pytest"
 pylint = "pylint qiskit_aqt_provider test"

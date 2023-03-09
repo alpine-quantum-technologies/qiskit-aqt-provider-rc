@@ -10,15 +10,20 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
+
 from qiskit import QuantumCircuit
-from qiskit_aer import AerSimulator
 
+from qiskit_aqt_provider import AQTProvider
 
-class Simulator:
-    def __init__(self) -> None:
-        pass
+if __name__ == "__main__":
+    from math import pi
 
+    aqt = AQTProvider("")
+    backend = aqt.get_resource("default", "offline_simulator")
 
-def run_on_simulator(circuit: QuantumCircuit, shots: int) -> str:
-    backend = AerSimulator(method="statevector")
-    job = backend.run(circuit)
+    qc = QuantumCircuit(2)
+    qc.ry(pi / 2, 1)
+    qc.measure_all()
+
+    job = backend.run(qc, shots=200)
+    print(job.result().get_counts())
