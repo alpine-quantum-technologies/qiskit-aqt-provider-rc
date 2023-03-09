@@ -116,11 +116,9 @@ def test_simulator_quantum_volume(
     """Run a qiskit_experiments.library.QuantumVolume job. Check that the noiseless simulator
     has at least quantum volume 2**qubits."""
     experiment = QuantumVolume(list(range(qubits)), offline_simulator_no_noise, trials=100)
-    experiment.set_transpile_options(optimization_level=3)
+    experiment.set_transpile_options(optimization_level=0)
     experiment.set_run_options(shots=shots)
     job = experiment.run()
-
-    # TODO: is it possible to check that the number of shots is propagated correctly?
 
     result = job.analysis_results("quantum_volume")
     assert result.value == (1 << qubits)
