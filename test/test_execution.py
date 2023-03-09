@@ -98,8 +98,8 @@ def test_bell_states(shots: int, qubits: int, offline_simulator_no_noise: AQTRes
     """Create a N qubits Bell state."""
     qc = QuantumCircuit(qubits)
     qc.h(0)
-    for n in range(1, qubits):
-        qc.cx(0, n)
+    for qubit in range(1, qubits):
+        qc.cx(0, qubit)
     qc.measure_all()
 
     job = qiskit.execute(qc, offline_simulator_no_noise, shots=shots)

@@ -243,7 +243,7 @@ def qubit_states_from_int(state: int, num_qubits: int) -> List[int]:
 class OfflineSimulatorResource(AQTResource):
     """AQT-compatible offline simulator resource that uses the Qiskit-Aer backend."""
 
-    def __init__(self, provider, workspace: str, resource: ApiResource) -> None:
+    def __init__(self, provider: Provider, workspace: str, resource: ApiResource) -> None:
         if resource["type"] != "offline_simulator":
             raise ValueError(f"Cannot instantiate an OfflineSimulatorResource for {resource=}")
 
