@@ -80,6 +80,18 @@ preview = true  # don't use implicit string concatenation
 [tool.isort]
 profile = "black"
 
+[tool.pyright]
+typeCheckingMode = "basic"
+analyzeUnannotatedFunctions = false
+reportMissingImports = false
+reportMissingTypeStubs = false
+reportImportCycles = false
+
+reportDuplicateImport = "error"
+
+pythonVersion = "3.8"
+pythonPlatform = "Linux"
+
 [tool.pylint.BASIC]
 good-names = [
     "qc",  # quantum circuit
