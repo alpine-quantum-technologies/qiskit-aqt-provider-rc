@@ -36,9 +36,6 @@ include = [
 [tool.poetry.plugins."qiskit.transpiler.scheduling"]
 aqt = "qiskit_aqt_provider.transpiler_plugin:AQTSchedulingPlugin"
 
-[tool.poetry.plugins."qiskit.transpiler.translation"]
-aqt = "qiskit_aqt_provider.transpiler_plugin:AQTTranslationPlugin"
-
 [tool.poetry.plugins.pytest11]
 pytest_qiskit_aqt = "qiskit_aqt_provider.test.fixtures"
 
