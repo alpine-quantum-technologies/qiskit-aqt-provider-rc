@@ -16,7 +16,7 @@ This tests whether the circuit pre-conditioning and results formatting works as
 expected."""
 
 from fractions import Fraction
-from math import lcm, pi
+from math import pi
 from typing import List
 
 import numpy as np
@@ -221,7 +221,7 @@ def test_period_finding_circuit(offline_simulator_no_noise: AQTResource) -> None
         b1 = k1.denominator  # pylint: disable=invalid-name
         b2 = k2.denominator  # pylint: disable=invalid-name
 
-        r = lcm(b1, b2)  # pylint: disable=invalid-name
+        r = np.lcm(b1, b2)  # pylint: disable=invalid-name
         results.append(f(r) == f(0))
 
     # more than 60% of the attempts were successful
