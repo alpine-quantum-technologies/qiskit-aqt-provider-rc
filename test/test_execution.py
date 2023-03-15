@@ -30,6 +30,16 @@ from qiskit_aqt_provider.aqt_resource import AQTResource
 from qiskit_aqt_provider.test.circuits import qft_circuit
 
 
+@pytest.mark.parametrize("shots", [100])
+def test_empty_circuit(shots: int, offline_simulator_no_noise: AQTResource) -> None:
+    """Run an empty circuit."""
+    qc = QuantumCircuit(1)
+    qc.measure_all()
+
+    job = qiskit.execute(qc, offline_simulator_no_noise)
+    assert job.result().get_counts() == {"0": shots}
+
+
 @pytest.mark.parametrize("shots", [1, 100, 200])
 def test_simple_backend_run(shots: int, offline_simulator_no_noise: AQTResource) -> None:
     """Run a simple circuit with `backend.run`."""
