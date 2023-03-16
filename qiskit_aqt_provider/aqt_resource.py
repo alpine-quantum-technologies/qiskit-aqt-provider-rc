@@ -166,6 +166,9 @@ class AQTResource(Backend):
     def get_scheduling_stage_plugin(self) -> str:
         return "aqt"
 
+    def get_translation_stage_plugin(self) -> str:
+        return "aqt"
+
     def run(self, run_input: Union[QuantumCircuit, List[QuantumCircuit]], **options):
         if not isinstance(run_input, list):
             run_input = [run_input]
