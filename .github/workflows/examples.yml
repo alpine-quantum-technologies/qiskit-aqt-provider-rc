@@ -1,0 +1,48 @@
+# name: Smoke test package
+# on:
+#   push:
+#     branches: [ master, 'stable/*' ]
+#   pull_request:
+#     branches: [ master, 'stable/*' ]
+# jobs:
+#   build:
+#     name: Build package
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: "3.8"
+#       - name: Install poetry
+#         uses: abatilo/actions-poetry@v2
+#         with:
+#           poetry-version: "1.3.2"
+#       - name: Build package
+#         run: |
+#           poetry build -f wheel
+#         shell: bash
+#       - name: Upload built package
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: built-packages
+#           path: ./dist
+#   examples:
+#     name: Run example scripts
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/download-artifact@v2
+#         with:
+#           name: built-packages
+#           path: ./dist
+#       - name: Set up Python 3.8
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: "3.8"
+#       - name: Install package
+#         run: |
+#           pip install dist/qiskit*.whl
+#         shell: bash
+#       - name: Run example script
+#         run: |
+#           python -m qiskit_aqt_provider.examples.example
