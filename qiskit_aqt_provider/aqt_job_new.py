@@ -227,6 +227,8 @@ class AQTJobNew(JobV1):
                 self._jobs[job_id] = JobQueued()
             elif response["status"] == "ongoing":
                 self._jobs[job_id] = JobOngoing()
+            elif response["status"] == "cancelled":
+                self._jobs[job_id] = JobCancelled()
             else:
                 raise RuntimeError(f"API returned unknown job status: {response['status']}.")
 
