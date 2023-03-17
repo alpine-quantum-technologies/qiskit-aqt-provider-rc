@@ -49,7 +49,7 @@ def test_error_circuit(error_resource: AQTResource) -> None:
 
     result = qiskit.execute(qc, error_resource).result()
     assert result.success is False
-    errors = [(job_id, error_str) for job_id, error_str in result._metadata["errors"].items()]
+    errors = list(result._metadata["errors"].items())
     assert errors == [(IsUUID, error_resource.error_str)]
 
 

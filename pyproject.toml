@@ -133,7 +133,7 @@ reports = false
 score = false
 
 [tool.coverage.report]
-fail_under = 82
+fail_under = 83
 
 [tool.poe.tasks]
 _test = "coverage run -m pytest"

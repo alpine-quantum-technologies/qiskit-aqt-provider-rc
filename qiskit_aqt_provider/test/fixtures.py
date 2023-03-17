@@ -86,7 +86,7 @@ class AbstractDummyResource(AQTResource, abc.ABC):
 
     @abc.abstractmethod
     def result(self, job_id: str) -> Dict[str, Any]:
-        ...
+        ...  # pragma: no cover
 
 
 class ErrorResource(AbstractDummyResource):
