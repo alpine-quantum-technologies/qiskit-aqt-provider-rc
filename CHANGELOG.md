@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Fix and improve error handing from individual circuits #24
+* Run the examples in the continuous integration pipeline #26
 
 ## qiskit-aqt-provider v0.8.1
 
