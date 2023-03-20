@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # Retrieve a backend by providing a `workspace` and `device_id`
     backend = provider.get_resource("default", "offline_simulator_no_noise")
 
-    # Creating and running a circuit works as before:
+    # Create a 4-qubit GHZ state
     qc = QuantumCircuit(4)
     qc.h(0)
     qc.cx(0, 1)
@@ -38,5 +38,5 @@ if __name__ == "__main__":
 
     if result.success:
         print(result.get_counts())
-    else:
+    else:  # pragma: no cover
         print(result.to_dict()["errors"])

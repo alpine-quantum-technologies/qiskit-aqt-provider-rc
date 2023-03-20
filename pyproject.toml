@@ -135,10 +135,17 @@ score = false
 [tool.coverage.report]
 fail_under = 83
 
+[tool.poe.tasks.test]
+shell = """
+coverage run ${cov_opts} -m pytest
+coverage report
+"""
+
+[[tool.poe.tasks.test.args]]
+name = "cov_opts"
+default = ""
+
 [tool.poe.tasks]
-_test = "coverage run -m pytest"
-_cov_report = "coverage report"
-test = ["_test", "_cov_report"]
 pylint = "pylint qiskit_aqt_provider test"
 mypy = "mypy ."
 isort = "isort ."
