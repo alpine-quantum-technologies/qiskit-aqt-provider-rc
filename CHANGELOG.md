@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Fix and improve error handing from individual circuits #24
+* Automatically create a Github release when a version tag is pushed #28
 
 ## qiskit-aqt-provider v0.8.1
 
