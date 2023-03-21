@@ -7,6 +7,7 @@
 * Automatically create a Github release when a version tag is pushed #28
 * Add `number_of_qubits` to the `quantum_circuit` job payload #29
 * Fix substitution circuit for wrapping the `Rxx` angles #30
+* Add a Grover-based 3-SAT solver example #31
 
 ## qiskit-aqt-provider v0.8.1
 
