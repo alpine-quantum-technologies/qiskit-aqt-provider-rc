@@ -5,6 +5,7 @@
 * Fix and improve error handing from individual circuits #24
 * Run the examples in the continuous integration pipeline #26
 * Add `number_of_qubits` to the `quantum_circuit` job payload #29
+* Fix substitution circuit for wrapping the `Rxx` angles #30
 
 ## qiskit-aqt-provider v0.8.1
 
