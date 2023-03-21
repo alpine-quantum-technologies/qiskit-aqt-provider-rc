@@ -30,13 +30,14 @@ from qiskit_aqt_provider import AQTProvider
 class ThreeSatProblem:
     """A 3-SAT problem, defined as DIMACS-CNF."""
 
-    def __init__(self, dimacs_cnf: str):
+    def __init__(self, dimacs_cnf: str, *, num_solutions: int):
         with tempfile.NamedTemporaryFile(mode="w+t", encoding="ascii") as fp:
             fp.write(dimacs_cnf)
             fp.flush()
 
             self.func = tweedledum.BoolFunction.from_dimacs_file(fp.name)
             self.oracle = PhaseOracle.from_dimacs_file(fp.name)
+            self.num_solutions = num_solutions
 
     def is_solution(self, bits: str) -> bool:
         """Whether the given bitstring is a solution to the problem."""
@@ -64,19 +65,19 @@ if __name__ == "__main__":
     import tweedledum
 
     # Problem definition
-    NUM_SOLUTIONS: Final = 3
     sat_problem = ThreeSatProblem(
         textwrap.dedent(
             """
-        c example DIMACS-CNF 3-SAT
-        p cnf 3 5
-        -1 -2 -3 0
-        1 -2 3 0
-        1 2 -3 0
-        1 -2 -3 0
-        -1 2 3 0
-        """
-        )
+            c example DIMACS-CNF 3-SAT
+            p cnf 3 5
+            -1 -2 -3 0
+            1 -2 3 0
+            1 2 -3 0
+            1 -2 -3 0
+            -1 2 3 0
+            """
+        ),
+        num_solutions=3,
     )
 
     # Select the sampling engine
@@ -84,22 +85,22 @@ if __name__ == "__main__":
     sampler = BackendSampler(backend)
 
     # Map the problem to a Grover search
-    problem = AmplificationProblem(
-        sat_problem.oracle, is_good_state=sat_problem.oracle.evaluate_bitstring
+    problem = AmplificationProblem(sat_problem.oracle, is_good_state=sat_problem.is_solution)
+    grover = Grover(
+        iterations=Grover.optimal_num_iterations(sat_problem.num_solutions, 3), sampler=sampler
     )
-    grover = Grover(iterations=Grover.optimal_num_iterations(NUM_SOLUTIONS, 3), sampler=sampler)
 
     # Run the Grover search until all solutions are found
     MAX_ITERATIONS: Final = 100
     solutions: Set[str] = set()
     for _ in range(MAX_ITERATIONS):
-        candidate = grover.amplify(problem).assignment
-        if sat_problem.is_solution(candidate):
-            solutions.add(candidate)
-        if len(solutions) == NUM_SOLUTIONS:
+        solutions.add(grover.amplify(problem).assignment)
+        if len(solutions) == sat_problem.num_solutions:
             break
     else:  # pragma: no cover
         raise RuntimeError(f"Didn't find all solutions in {MAX_ITERATIONS} iterations.")
 
     for solution in solutions:
+        # validate again that the solutions are indeed solutions
+        assert sat_problem.is_solution(solution)
         print(format_bitstring(solution))
