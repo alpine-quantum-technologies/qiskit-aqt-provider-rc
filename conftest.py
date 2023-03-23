@@ -12,6 +12,13 @@
 
 """Pytest dynamic configuration."""
 
+import hypothesis
+
+hypothesis.settings.register_profile(
+    "default",
+    print_blob=True,  # Always print code to use with @reproduce_failure
+)
+
 pytest_plugins = [
     "pytest_qiskit_aqt",
 ]

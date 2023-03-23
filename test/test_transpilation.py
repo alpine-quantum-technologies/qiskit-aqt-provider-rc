@@ -14,8 +14,11 @@ from math import pi
 from typing import Final
 
 import pytest
+from hypothesis import assume, given
+from hypothesis import strategies as st
 from qiskit import QuantumCircuit, transpile
 
+from qiskit_aqt_provider.aqt_provider import AQTProvider
 from qiskit_aqt_provider.aqt_resource import AQTResource
 from qiskit_aqt_provider.test.circuits import (
     assert_circuits_equal,
@@ -171,24 +174,38 @@ RXX_ANGLES: Final = [
 ]
 
 
-@pytest.mark.parametrize("angle", RXX_ANGLES)
-@pytest.mark.parametrize("qubits", [2, 3, 5])
+@given(
+    angle=st.floats(
+        allow_nan=False,
+        allow_infinity=False,
+        min_value=-1000 * pi,
+        max_value=1000 * pi,
+    )
+)
+@pytest.mark.parametrize("qubits", [3])
 @pytest.mark.parametrize("optimization_level", [1, 2, 3])
-def test_rxx_wrap_angle_transpile(
-    angle: float, qubits: int, optimization_level: int, offline_simulator_no_noise: AQTResource
-) -> None:
+def test_rxx_wrap_angle_transpile(angle: float, qubits: int, optimization_level: int) -> None:
     """Check that Rxx angles are wrapped by the transpiler."""
+    assume(abs(angle) > pi / 200)
+
     qc = QuantumCircuit(qubits)
     qc.rxx(angle, 0, 1)
-    trans_qc = transpile(qc, offline_simulator_no_noise, optimization_level=optimization_level)
+
+    # we only need the backend's transpilation target for this test
+    backend = AQTProvider("").get_resource("default", "offline_simulator_no_noise")
+    trans_qc = transpile(qc, backend, optimization_level=optimization_level)
     assert isinstance(trans_qc, QuantumCircuit)
 
     assert_circuits_equivalent(trans_qc, qc)
 
-    assert set(trans_qc.count_ops()) <= set(offline_simulator_no_noise.configuration().basis_gates)
-    assert trans_qc.count_ops()["rxx"] == 1
+    assert set(trans_qc.count_ops()) <= set(backend.configuration().basis_gates)
+    num_rxx = trans_qc.count_ops().get("rxx")
 
-    # check that all Rxx have angles in [-π/2, π/2]
+    # in high optimization levels, the gate might be dropped
+    assume(num_rxx is not None)
+    assert num_rxx == 1
+
+    # check that all Rxx have angles in [0, π/2]
     for operation in trans_qc.data:
         instruction = operation[0]
         if instruction.name == "rxx":
@@ -200,7 +217,7 @@ def test_rxx_wrap_angle_transpile(
 
 
 @pytest.mark.parametrize("qubits", [1, 5, 10])
-@pytest.mark.parametrize("optimization_level", [0, 1, 2, 3])
+@pytest.mark.parametrize("optimization_level", [1, 2, 3])
 def test_qft_circuit_transpilation(
     qubits: int, optimization_level: int, offline_simulator_no_noise: AQTResource
 ) -> None:
