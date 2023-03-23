@@ -22,6 +22,7 @@ from qiskit_aqt_provider.test.circuits import (
     assert_circuits_equivalent,
     qft_circuit,
 )
+from qiskit_aqt_provider.transpiler_plugin import wrap_rxx_angle
 
 
 @pytest.mark.parametrize(
@@ -79,6 +80,84 @@ def test_decompose_1q_rotations_simple(offline_simulator_no_noise: AQTResource) 
     assert_circuits_equal(result, expected)
 
 
+def test_rxx_wrap_angle_case0() -> None:
+    """Snapshot test for Rxx(θ) rewrite with 0 <= θ <= π/2."""
+    result = QuantumCircuit(2)
+    result.append(wrap_rxx_angle(pi / 2), (0, 1))
+
+    expected = QuantumCircuit(2)
+    expected.rxx(pi / 2, 0, 1)
+
+    assert_circuits_equal(result.decompose(), expected)
+    assert_circuits_equivalent(result.decompose(), expected)
+
+
+def test_rxx_wrap_angle_case0_negative() -> None:
+    """Snapshot test for Rxx(θ) rewrite with -π/2 <= θ < 0."""
+    result = QuantumCircuit(2)
+    result.append(wrap_rxx_angle(-pi / 2), (0, 1))
+
+    expected = QuantumCircuit(2)
+    expected.rz(pi, 0)
+    expected.rxx(pi / 2, 0, 1)
+    expected.rz(pi, 0)
+
+    assert_circuits_equal(result.decompose(), expected)
+    assert_circuits_equivalent(result.decompose(), expected)
+
+
+def test_rxx_wrap_angle_case1() -> None:
+    """Snapshot test for Rxx(θ) rewrite with π/2 < θ <= 3π/2."""
+    result = QuantumCircuit(2)
+    result.append(wrap_rxx_angle(3 * pi / 2), (0, 1))
+
+    expected = QuantumCircuit(2)
+    expected.rx(pi, 0)
+    expected.rx(pi, 1)
+    expected.rxx(pi / 2, 0, 1)
+
+    assert_circuits_equal(result.decompose(), expected)
+    assert_circuits_equivalent(result.decompose(), expected)
+
+
+def test_rxx_wrap_angle_case1_negative() -> None:
+    """Snapshot test for Rxx(θ) rewrite with -3π/2 <= θ < -π/2."""
+    result = QuantumCircuit(2)
+    result.append(wrap_rxx_angle(-3 * pi / 2), (0, 1))
+
+    expected = QuantumCircuit(2)
+    expected.rxx(pi / 2, 0, 1)
+
+    assert_circuits_equal(result.decompose(), expected)
+    assert_circuits_equivalent(result.decompose(), expected)
+
+
+def test_rxx_wrap_angle_case2() -> None:
+    """Snapshot test for Rxx(θ) rewrite with θ > 3*π/2."""
+    result = QuantumCircuit(2)
+    result.append(wrap_rxx_angle(18 * pi / 10), (0, 1))  # mod 2π = 9π/5 → -π/5
+
+    expected = QuantumCircuit(2)
+    expected.rz(pi, 0)
+    expected.rxx(pi / 5, 0, 1)
+    expected.rz(pi, 0)
+
+    assert_circuits_equal(result.decompose(), expected)
+    assert_circuits_equivalent(result.decompose(), expected)
+
+
+def test_rxx_wrap_angle_case2_negative() -> None:
+    """Snapshot test for Rxx(θ) rewrite with θ < -3π/2."""
+    result = QuantumCircuit(2)
+    result.append(wrap_rxx_angle(-18 * pi / 10), (0, 1))  # mod 2π = π/5
+
+    expected = QuantumCircuit(2)
+    expected.rxx(pi / 5, 0, 1)
+
+    assert_circuits_equal(result.decompose(), expected)
+    assert_circuits_equivalent(result.decompose(), expected)
+
+
 RXX_ANGLES: Final = [
     pi / 4,
     pi / 2,
@@ -102,8 +181,9 @@ def test_rxx_wrap_angle_transpile(
     qc = QuantumCircuit(qubits)
     qc.rxx(angle, 0, 1)
     trans_qc = transpile(qc, offline_simulator_no_noise, optimization_level=optimization_level)
-
     assert isinstance(trans_qc, QuantumCircuit)
+
+    assert_circuits_equivalent(trans_qc, qc)
 
     assert set(trans_qc.count_ops()) <= set(offline_simulator_no_noise.configuration().basis_gates)
     assert trans_qc.count_ops()["rxx"] == 1
@@ -113,10 +193,10 @@ def test_rxx_wrap_angle_transpile(
         instruction = operation[0]
         if instruction.name == "rxx":
             (theta,) = instruction.params
-            assert abs(float(theta)) <= pi / 2
-
-    # check that the transpiled circuit is equivalent to the original one
-    assert_circuits_equivalent(trans_qc, qc)
+            assert 0 <= float(theta) <= pi / 2
+            break  # there's only one Rxx gate in the circuit
+    else:  # pragma: no cover
+        pytest.fail("Transpiled circuit contains no Rxx gate.")
 
 
 @pytest.mark.parametrize("qubits", [1, 5, 10])
@@ -136,7 +216,7 @@ def test_qft_circuit_transpilation(
         instruction = operation[0]
         if instruction.name == "rxx":
             (theta,) = instruction.params
-            assert abs(float(theta)) <= pi / 2
+            assert 0 <= float(theta) <= pi / 2
 
         if instruction.name == "r":
             (theta, _) = instruction.params
