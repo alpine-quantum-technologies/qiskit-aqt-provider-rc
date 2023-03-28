@@ -141,7 +141,7 @@ reports = false
 score = false
 
 [tool.coverage.report]
-fail_under = 83
+fail_under = 93
 
 [tool.poe.tasks.test]
 shell = """

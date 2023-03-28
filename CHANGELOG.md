@@ -4,6 +4,7 @@
 
 * Add a Grover-based 3-SAT solver example #31
 * Wrap `Rxx` angles to [0, π/2] instead of [-π/2, π/2] #37
+* **Breaking change** Remove provider for legacy API #40
 
 ## qiskit-aqt-provider v0.9.0
 
