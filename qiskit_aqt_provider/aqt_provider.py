@@ -150,12 +150,12 @@ class AQTProvider:
         Args:
             access_token: AQT ARNICA access token
             load_dotenv: whether to load environment variables from a .env file
-            dotenv_path: path to the environment file to load if `load_dotenv` is true.
+            dotenv_path: path to the environment file. This implies `load_dotenv`.
         """
-        if load_dotenv:
+        if load_dotenv or dotenv_path is not None:
             dotenv.load_dotenv(dotenv_path)
 
-            portal_base_url = os.environ.get("AQT_PORTAL_URL", AQTProvider.DEFAULT_PORTAL_URL)
+        portal_base_url = os.environ.get("AQT_PORTAL_URL", AQTProvider.DEFAULT_PORTAL_URL)
         self.portal_url = f"{portal_base_url}/api/v1"
 
         if access_token is None:
