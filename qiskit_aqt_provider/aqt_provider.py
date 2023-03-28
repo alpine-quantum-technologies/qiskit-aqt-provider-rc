@@ -13,6 +13,7 @@
 
 import itertools
 import os
+from pathlib import Path
 from typing import Dict, Final, Iterable, Iterator, List, Optional, Set, Union
 
 import dotenv
@@ -24,7 +25,7 @@ from typing_extensions import NotRequired, TypeAlias, TypedDict
 from .aqt_resource import ApiResource, AQTResource, OfflineSimulatorResource
 from .constants import REQUESTS_TIMEOUT
 
-StrPath: TypeAlias = Union[str, os.PathLike[str]]
+StrPath: TypeAlias = Union[str, Path]
 
 
 class WorkspaceResources(TypedDict):
@@ -154,7 +155,7 @@ class AQTProvider:
         if load_dotenv:
             dotenv.load_dotenv(dotenv_path)
 
-        portal_base_url = os.environ.get("AQT_PORTAL_URL", AQTProvider.DEFAULT_PORTAL_URL)
+            portal_base_url = os.environ.get("AQT_PORTAL_URL", AQTProvider.DEFAULT_PORTAL_URL)
         self.portal_url = f"{portal_base_url}/api/v1"
 
         if access_token is None:
