@@ -40,7 +40,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.AQT_PACKAGE_REGISTRY_WRITE_TOKEN }}
           TWINE_USERNAME: github-pypi-python-packages-upload
         run: twine upload --repository-url ${{ secrets.AQT_PACKAGE_REGISTRY_URL }} dist/qiskit*
-      - name: Publish to AQT-Partners package registry
+      - name: Publish to AQT-partners package registry
         env:
           TWINE_PASSWORD: ${{ secrets.AQT_PARTNERS_PACKAGE_REGISTRY_WRITE_TOKEN }}
           TWINE_USERNAME: github-pypi-python-packages-upload
