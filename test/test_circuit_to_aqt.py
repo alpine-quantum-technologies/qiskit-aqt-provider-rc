@@ -19,7 +19,7 @@ from qiskit_aqt_provider.circuit_to_aqt import circuit_to_aqt
 
 
 def test_empty_circuit() -> None:
-    """Circuit need at least one measurement operation."""
+    """Circuits need at least one measurement operation."""
     qc = QuantumCircuit(1)
     with pytest.raises(ValueError):
         circuit_to_aqt(qc, shots=1)
