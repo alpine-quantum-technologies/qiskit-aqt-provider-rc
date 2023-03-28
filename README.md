@@ -4,7 +4,7 @@
 
 [Qiskit](https://qiskit.org/) is an open-source SDK for working with quantum computers at the level of circuits, algorithms, and application modules.
 
-This project contains a provider that allows access to [AQT](https://www.aqt.eu/) ion-trap quantum
+This project contains a provider that allows access to [AQT](https://www.aqt.eu/) ion-trap quantum computing
 systems.
 
 ## Usage
