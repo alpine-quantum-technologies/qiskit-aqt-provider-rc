@@ -45,6 +45,7 @@ pytest_qiskit_aqt = "qiskit_aqt_provider.test.fixtures"
 [tool.poetry.dependencies]
 python = "^3.8"
 
+python-dotenv = ">=1"
 qiskit-aer = ">=0.11"
 qiskit-terra = ">=0.23.2"
 requests = ">=2"
