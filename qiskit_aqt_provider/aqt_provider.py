@@ -136,11 +136,11 @@ class AQTProvider:
     ):
         """Initialize the AQT provider.
 
-        The access token for the ARNICA cloud can be provided either through the
+        The access token for the AQT cloud can be provided either through the
         `access_token` argument or the `AQT_TOKEN` environment variable.
 
-        The ARNICA portal URL can be configured using the `AQT_PORTAL_URL` environment
-        variable.
+        The AQT cloud portal URL can be configured using the `AQT_PORTAL_URL`
+        environment variable.
 
         If `load_dotenv`, environment variables are loaded from a file, by default
         any `.env` file in the working directory or above it in the directory tree.
@@ -148,7 +148,7 @@ class AQTProvider:
         variables from.
 
         Args:
-            access_token: AQT ARNICA access token
+            access_token: AQT cloud access token
             load_dotenv: whether to load environment variables from a .env file
             dotenv_path: path to the environment file. This implies `load_dotenv`.
         """
