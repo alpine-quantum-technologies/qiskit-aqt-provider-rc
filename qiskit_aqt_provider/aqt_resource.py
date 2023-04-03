@@ -10,7 +10,9 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
+import abc
 import warnings
+from types import NoneType
 from typing import Any, Dict, List, Union
 
 import requests
@@ -36,6 +38,55 @@ class ApiResource(TypedDict):
     name: str
     id: str
     type: str  # Literal["simulator", "device"]
+
+
+class OptionalFloat(metaclass=abc.ABCMeta):
+    """Runtime type for optional floating-point numbers.
+
+    The type is permissive: integers are also allowed.
+
+    Runtime type checking can be done with the `isinstance` builtin.
+    See PEP-3119 for details.
+
+    Examples:
+        >>> isinstance(3.5, OptionalFloat)
+        True
+        >>> isinstance(3, OptionalFloat)
+        True
+        >>> isinstance(None, OptionalFloat)
+        True
+        >>> isinstance("abc", OptionalFloat)
+        False
+    """
+
+
+OptionalFloat.register(int)
+OptionalFloat.register(float)
+OptionalFloat.register(NoneType)
+
+
+class Float(metaclass=abc.ABCMeta):
+    """Permissive runtime type for floating-point numbers.
+
+    The type is permissive: integers are also allowed.
+
+    Runtime type checking can be done with the `isinstance` builtin.
+    See PEP-3119 for details.
+
+    Examples:
+        >>> isinstance(3.5, Float)
+        True
+        >>> isinstance(3, Float)
+        True
+        >>> isinstance(None, Float)
+        False
+        >>> isinstance("abc", Float)
+        False
+    """
+
+
+Float.register(int)
+Float.register(float)
 
 
 class AQTResource(Backend):
@@ -82,6 +133,8 @@ class AQTResource(Backend):
         self._target.add_instruction(RXXGate(theta))
         self._target.add_instruction(Measure())
         self.options.set_validator("shots", (1, 200))
+        self.options.set_validator("query_timeout_seconds", OptionalFloat)
+        self.options.set_validator("query_period_seconds", Float)
 
     def submit(self, circuit: QuantumCircuit, shots: int) -> str:
         """Submit a circuit.
@@ -159,7 +212,11 @@ class AQTResource(Backend):
 
     @classmethod
     def _default_options(cls) -> Options:
-        return Options(shots=100)
+        return Options(
+            shots=100,  # number of repetitions per circuit
+            query_timeout_seconds=None,  # timeout for job status queries
+            query_period_seconds=5,  # interval between job status queries
+        )
 
     def get_scheduling_stage_plugin(self) -> str:
         return "aqt"
