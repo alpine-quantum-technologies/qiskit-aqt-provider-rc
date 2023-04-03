@@ -16,12 +16,10 @@ from types import NoneType
 from typing import Any, Dict, List, Union
 
 import requests
-from qiskit import QuantumCircuit, pulse
-from qiskit import qobj as qobj_mod
+from qiskit import QuantumCircuit
 from qiskit.circuit.library import RXGate, RXXGate, RZGate
 from qiskit.circuit.measure import Measure
 from qiskit.circuit.parameter import Parameter
-from qiskit.exceptions import QiskitError
 from qiskit.providers import BackendV2 as Backend
 from qiskit.providers import Options, Provider
 from qiskit.providers.models import BackendConfiguration
@@ -177,7 +175,7 @@ class AQTResource(Backend):
         req.raise_for_status()
         return req.json()
 
-    def configuration(self):
+    def configuration(self) -> BackendConfiguration:
         warnings.warn(
             (
                 "The configuration() method is deprecated and will be removed in a "
@@ -190,7 +188,7 @@ class AQTResource(Backend):
         )
         return self._configuration
 
-    def properties(self):
+    def properties(self) -> None:
         warnings.warn(
             (
                 "The properties() method is deprecated and will be removed in a "
@@ -224,17 +222,9 @@ class AQTResource(Backend):
     def get_translation_stage_plugin(self) -> str:
         return "aqt"
 
-    def run(self, run_input: Union[QuantumCircuit, List[QuantumCircuit]], **options):
+    def run(self, run_input: Union[QuantumCircuit, List[QuantumCircuit]], **options: Any) -> AQTJob:
         if not isinstance(run_input, list):
             run_input = [run_input]
-
-        if any(
-            map(
-                lambda x: isinstance(x, (qobj_mod.PulseQobj, pulse.Schedule, pulse.ScheduleBlock)),
-                run_input,
-            )
-        ):
-            raise QiskitError("Pulse jobs are not accepted")
 
         unknown_options = set(options) - set(self.options.__dict__ or {})
         if unknown_options:
@@ -245,11 +235,7 @@ class AQTResource(Backend):
                     stacklevel=2,
                 )
 
-        # TODO: use the Options validator instead of custom logic here
         shots = options.get("shots", self.options.shots)
-
-        if shots > self.configuration().max_shots:
-            raise ValueError("Number of shots is larger than maximum number of shots")
 
         job = AQTJob(self, circuits=run_input, shots=shots)
         job.submit()
