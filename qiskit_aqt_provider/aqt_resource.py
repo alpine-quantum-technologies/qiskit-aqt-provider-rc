@@ -12,7 +12,6 @@
 
 import abc
 import warnings
-from types import NoneType
 from typing import Any, Dict, List, Union
 
 import requests
@@ -60,7 +59,7 @@ class OptionalFloat(metaclass=abc.ABCMeta):
 
 OptionalFloat.register(int)
 OptionalFloat.register(float)
-OptionalFloat.register(NoneType)
+OptionalFloat.register(type(None))
 
 
 class Float(metaclass=abc.ABCMeta):
