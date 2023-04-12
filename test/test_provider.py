@@ -101,7 +101,7 @@ def test_autoload_env_deactivated(tmp_path: Path) -> None:
     dotenv_path.write_text(f'AQT_TOKEN = "{env_token}"')
 
     mocked_env = os.environ.copy()
-    with mock.patch.object(os, "environ", mocked_env):  # noqa: SIM117
+    with mock.patch.object(os, "environ", mocked_env):
         with pytest.raises(ValueError) as excinfo:
             AQTProvider(load_dotenv=False)
 

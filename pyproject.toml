@@ -148,6 +148,8 @@ ignore = [
     "D107",  # missing docstring in __init__
     "D211",  # no-blank-line-before-class (incompatible with D203)
     "D213",  # multiline-summary-second-line (incompatible with D212)
+    "S311",  # suspicious-non-cryptographic-random-usage
+    "SIM117",  # multiple-with-statements
 ]
 line-length = 100
 target-version = 'py38'
@@ -169,7 +171,7 @@ target-version = 'py38'
 convention = "google"
 
 [tool.coverage.report]
-fail_under = 93
+fail_under = 96
 
 [tool.poe.tasks.test]
 shell = """

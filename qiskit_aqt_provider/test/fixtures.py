@@ -23,7 +23,6 @@ import pytest
 from qiskit_aqt_provider.aqt_provider import AQTProvider
 from qiskit_aqt_provider.aqt_resource import AQTResource, OfflineSimulatorResource
 from qiskit_aqt_provider.circuit_to_aqt import circuit_to_aqt
-from qiskit_aqt_provider.test.resources import ErrorResource, NonCompliantResource
 
 
 @pytest.fixture(name="offline_simulator_no_noise")
@@ -44,19 +43,3 @@ def fixture_offline_simulator_no_noise() -> Iterator[AQTResource]:
                 _ = circuit_to_aqt(circuit, shots=shots)
             except Exception:  # pragma: no cover  # noqa: BLE001
                 pytest.fail(f"Circuit cannot be converted to the AQT JSON format:\n{circuit}")
-
-
-@pytest.fixture(name="error_resource")
-def fixture_error_resource() -> AQTResource:
-    """An AQT resource that always returns well-formed error payloads.
-
-    The error message returned by the resource is stored in the
-    `error_str` attribute.
-    """
-    return ErrorResource()
-
-
-@pytest.fixture(name="non_compliant_resource")
-def fixture_non_compliant_resource() -> AQTResource:
-    """An AQT resource that always returns ill-formed payloads."""
-    return NonCompliantResource()
