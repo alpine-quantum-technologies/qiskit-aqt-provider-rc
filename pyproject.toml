@@ -194,7 +194,7 @@ pyproject-fmt --check .
 """
 
 [tool.poe.tasks]
-ruff = "ruff qiskit_aqt_provider test"
+ruff = "ruff check ."
 mypy = "mypy ."
 lint = ["mypy", "ruff"]
 docs = "sphinx-build -b html -W docs docs/_build"
