@@ -307,7 +307,7 @@ def test_period_finding_circuit(offline_simulator_no_noise: AQTResource) -> None
 
     # The function to find the period of
     def f(x: int) -> int:
-        return (13**x) % 15
+        return pow(13, x, 15)
 
     def f_circuit(num_qubits: int) -> QuantumCircuit:
         """Quantum circuit for f(x) = 13^x mod 15."""
@@ -377,7 +377,7 @@ def test_period_finding_circuit(offline_simulator_no_noise: AQTResource) -> None
         b2 = k2.denominator
 
         r = np.lcm(b1, b2)
-        results.append(f(r) == f(0))
+        results.append(f(int(r)) == f(0))
 
     # more than 50% of the attempts were successful
     assert len(results) > n_attempts * 0.5
