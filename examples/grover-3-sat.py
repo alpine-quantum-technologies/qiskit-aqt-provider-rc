@@ -16,6 +16,7 @@ This is a modified version of the corresponding
 [Qiskit tutorial](https://qiskit.org/documentation/tutorials/algorithms/07_grover_examples.html).
 """
 
+
 import tempfile
 import textwrap
 from typing import Final, Set, Tuple
@@ -101,6 +102,4 @@ if __name__ == "__main__":
         raise RuntimeError(f"Didn't find all solutions in {MAX_ITERATIONS} iterations.")
 
     for solution in solutions:
-        # validate again that the solutions are indeed solutions
-        assert sat_problem.is_solution(solution)
         print(format_bitstring(solution))

@@ -29,7 +29,6 @@ from qiskit_aqt_provider.test.resources import ErrorResource, NonCompliantResour
 @pytest.fixture(name="offline_simulator_no_noise")
 def fixture_offline_simulator_no_noise() -> Iterator[AQTResource]:
     """Noiseless offline simulator resource."""
-
     provider = AQTProvider("")
     resource = provider.get_resource("default", "offline_simulator_no_noise")
     with patch.object(OfflineSimulatorResource, "submit", wraps=resource.submit) as mock:
@@ -43,22 +42,21 @@ def fixture_offline_simulator_no_noise() -> Iterator[AQTResource]:
 
             try:
                 _ = circuit_to_aqt(circuit, shots=shots)
-            # pylint: disable-next=broad-except
-            except Exception:  # pragma: no cover
+            except Exception:  # pragma: no cover  # noqa: BLE001
                 pytest.fail(f"Circuit cannot be converted to the AQT JSON format:\n{circuit}")
 
 
 @pytest.fixture(name="error_resource")
-def fixture_error_resource() -> Iterator[AQTResource]:
+def fixture_error_resource() -> AQTResource:
     """An AQT resource that always returns well-formed error payloads.
 
     The error message returned by the resource is stored in the
     `error_str` attribute.
     """
-    yield ErrorResource()
+    return ErrorResource()
 
 
 @pytest.fixture(name="non_compliant_resource")
-def fixture_non_compliant_resource() -> Iterator[AQTResource]:
+def fixture_non_compliant_resource() -> AQTResource:
     """An AQT resource that always returns ill-formed payloads."""
-    yield NonCompliantResource()
+    return NonCompliantResource()

@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
+
 import os
 import uuid
 from pathlib import Path
@@ -65,7 +66,8 @@ def test_access_token_envvar(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_access_token_argument_precendence_over_envvar(monkeypatch: pytest.MonkeyPatch) -> None:
     """Check that the argument has precedence over the environment variable for setting
-    the access token."""
+    the access token.
+    """
     arg_token = str(uuid.uuid4())
     env_token = str(uuid.uuid4())
     assert arg_token != env_token
@@ -99,7 +101,7 @@ def test_autoload_env_deactivated(tmp_path: Path) -> None:
     dotenv_path.write_text(f'AQT_TOKEN = "{env_token}"')
 
     mocked_env = os.environ.copy()
-    with mock.patch.object(os, "environ", mocked_env):
+    with mock.patch.object(os, "environ", mocked_env):  # noqa: SIM117
         with pytest.raises(ValueError) as excinfo:
             AQTProvider(load_dotenv=False)
 

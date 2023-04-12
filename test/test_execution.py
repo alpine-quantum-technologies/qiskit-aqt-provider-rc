@@ -13,7 +13,9 @@
 """Run various circuits on an offline simulator controlled by an AQTResource.
 
 This tests whether the circuit pre-conditioning and results formatting works as
-expected."""
+expected.
+"""
+
 
 from fractions import Fraction
 from math import pi
@@ -44,7 +46,8 @@ def test_empty_circuit(shots: int, offline_simulator_no_noise: AQTResource) -> N
 
 def test_error_circuit(error_resource: AQTResource) -> None:
     """Check that errors in circuits are reported in the `errors` field of the Qiskit
-    result metadata, where the keys are the circuit job ids."""
+    result metadata, where the keys are the circuit job ids.
+    """
     qc = QuantumCircuit(1)
     qc.measure_all()
 
@@ -56,7 +59,8 @@ def test_error_circuit(error_resource: AQTResource) -> None:
 
 def test_non_compliant_resource(non_compliant_resource: AQTResource) -> None:
     """Check that if the resource sends back ill-formed payloads, the job raises a
-    RuntimeError."""
+    RuntimeError.
+    """
     qc = QuantumCircuit(1)
     qc.measure_all()
 
@@ -142,7 +146,8 @@ def test_get_memory_simple(
     """Check that the raw bitstrings can be accessed for each shot via the
     get_memory() method in Qiskit's Result.
 
-    The memory option has no effect (raw memory is always accessible)."""
+    The memory option has no effect (raw memory is always accessible).
+    """
     qc = QuantumCircuit(2)
     qc.h(0)
     qc.cx(0, 1)
@@ -158,7 +163,8 @@ def test_get_memory_simple(
 @pytest.mark.parametrize("shots", [123])
 def test_get_memory_ancilla_qubits(shots: int, offline_simulator_no_noise: AQTResource) -> None:
     """Check that the raw bistrings returned by get_memory() in Qiskit's Result only
-    contain the mapped classical bits."""
+    contain the mapped classical bits.
+    """
     qr = QuantumRegister(2)
     qr_aux = QuantumRegister(3)
     memory = ClassicalRegister(2)
@@ -179,7 +185,8 @@ def test_get_memory_ancilla_qubits(shots: int, offline_simulator_no_noise: AQTRe
 @pytest.mark.parametrize("shots", [123])
 def test_get_memory_bit_ordering(shots: int, offline_simulator_no_noise: AQTResource) -> None:
     """Check that the bitstrings returned by the results produced by AQT jobs have the same
-    bit order as the Qiskit Aer simulators."""
+    bit order as the Qiskit Aer simulators.
+    """
     sim = AerSimulator(method="statevector")
 
     qc = QuantumCircuit(3)
@@ -196,7 +203,7 @@ def test_get_memory_bit_ordering(shots: int, offline_simulator_no_noise: AQTReso
     assert not any(bitstring == bitstring[::-1] for bitstring in sim_memory)
 
 
-@pytest.mark.parametrize("shots,qubits", [(100, 5), (100, 8)])
+@pytest.mark.parametrize(("shots", "qubits"), [(100, 5), (100, 8)])
 def test_bell_states(shots: int, qubits: int, offline_simulator_no_noise: AQTResource) -> None:
     """Create a N qubits Bell state."""
     qc = QuantumCircuit(qubits)
@@ -212,12 +219,13 @@ def test_bell_states(shots: int, qubits: int, offline_simulator_no_noise: AQTRes
     assert sum(counts.values()) == shots
 
 
-@pytest.mark.parametrize("shots,qubits", [(100, 3)])
+@pytest.mark.parametrize(("shots", "qubits"), [(100, 3)])
 def test_simulator_quantum_volume(
     shots: int, qubits: int, offline_simulator_no_noise: AQTResource
 ) -> None:
     """Run a qiskit_experiments.library.QuantumVolume job. Check that the noiseless simulator
-    has at least quantum volume 2**qubits."""
+    has at least quantum volume 2**qubits.
+    """
     experiment = QuantumVolume(list(range(qubits)), offline_simulator_no_noise, trials=100)
     experiment.set_transpile_options(optimization_level=0)
     experiment.set_run_options(shots=shots)
@@ -228,12 +236,12 @@ def test_simulator_quantum_volume(
     assert result.extra["success"]
 
 
-# pylint: disable-next=too-many-locals
 def test_period_finding_circuit(offline_simulator_no_noise: AQTResource) -> None:
     """Run a period-finding circuit for the function 13**x mod 15 on the offline simulator.
 
     Do 20 evaluations of the 2-shot procedure and collect results. Check that the correct
-    period (4) is found often enough."""
+    period (4) is found often enough.
+    """
 
     # The function to find the period of
     def f(x: int) -> int:
@@ -294,22 +302,19 @@ def test_period_finding_circuit(offline_simulator_no_noise: AQTResource) -> None
     # and do the classical post-processing to extract the period of the function f.
     for _ in range(n_attempts):
         try:
-            # pylint: disable-next=invalid-name
             x1, x2 = iteration().int_outcomes().keys()
         except ValueError:  # identical results, skip
             continue
 
-        m = num_qubits // 2  # pylint: disable=invalid-name
+        m = num_qubits // 2
 
-        # pylint: disable-next=invalid-name
         k1 = Fraction(x1, 2**num_qubits).limit_denominator(2**m - 1)
-        # pylint: disable-next=invalid-name
         k2 = Fraction(x2, 2**num_qubits).limit_denominator(2**m - 1)
 
-        b1 = k1.denominator  # pylint: disable=invalid-name
-        b2 = k2.denominator  # pylint: disable=invalid-name
+        b1 = k1.denominator
+        b2 = k2.denominator
 
-        r = np.lcm(b1, b2)  # pylint: disable=invalid-name
+        r = np.lcm(b1, b2)
         results.append(f(r) == f(0))
 
     # more than 50% of the attempts were successful

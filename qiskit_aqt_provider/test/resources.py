@@ -32,7 +32,11 @@ class AbstractDummyResource(AQTResource, abc.ABC):
             AQTProvider(""), "dummy", ApiResource(name="dummy", id="dummy", type="simulator")
         )
 
-    def submit(self, circuit: QuantumCircuit, shots: int) -> str:
+    def submit(
+        self,
+        circuit: QuantumCircuit,  # noqa: ARG002
+        shots: int,  # noqa: ARG002
+    ) -> str:
         job_id = str(uuid.uuid4())
         self.jobs.add(job_id)
         return job_id
@@ -73,7 +77,11 @@ class SlowResource(AbstractDummyResource):
         self.seconds_to_complete = seconds_to_complete
         self.jobs: Dict[str, Tuple[float, int]] = {}  # type: ignore[assignment]
 
-    def submit(self, circuit: QuantumCircuit, shots: int) -> str:
+    def submit(
+        self,
+        circuit: QuantumCircuit,  # noqa: ARG002
+        shots: int,
+    ) -> str:
         job_id = str(uuid.uuid4())
         self.jobs[job_id] = (time.time(), shots)
         return job_id

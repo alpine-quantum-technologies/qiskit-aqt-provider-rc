@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
+
 import math
 from unittest import mock
 
@@ -24,7 +25,6 @@ from qiskit_aqt_provider.test.resources import SlowResource
 
 def test_options_set_query_timeout(offline_simulator_no_noise: AQTResource) -> None:
     """Set the query timeout for job status queries with different values."""
-
     backend = offline_simulator_no_noise
 
     # works with integers
@@ -46,7 +46,6 @@ def test_options_set_query_timeout(offline_simulator_no_noise: AQTResource) -> N
 
 def test_options_set_query_period(offline_simulator_no_noise: AQTResource) -> None:
     """Set the query period for job status queries with different values."""
-
     backend = offline_simulator_no_noise
 
     # works with integers
@@ -71,7 +70,8 @@ def test_query_timeout_propagation() -> None:
     the job result polling loop.
 
     Acquire a resource with 10s processing time, but set the job result timeout to 1s.
-    Check that calling `result()` on the job handle fails with a timeout error."""
+    Check that calling `result()` on the job handle fails with a timeout error.
+    """
     response_delay = 10.0
     timeout = 1.0
     assert timeout < response_delay
@@ -93,7 +93,8 @@ def test_query_period_propagation() -> None:
     to the job result polling loop.
 
     Set the polling period (much) shorter than the backend's processing time. Check that
-    the backend is polled the calculated number of times."""
+    the backend is polled the calculated number of times.
+    """
     response_delay = 2.0
     period_seconds = 0.5
     timeout_seconds = 3.0
