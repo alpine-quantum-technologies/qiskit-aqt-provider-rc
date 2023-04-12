@@ -24,6 +24,7 @@ import pytest
 import qiskit
 from dirty_equals import IsUUID
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
+from qiskit.providers.jobstatus import JobStatus
 from qiskit.result import Counts
 from qiskit_aer import AerSimulator
 from qiskit_experiments.library import QuantumVolume
@@ -43,6 +44,30 @@ def test_empty_circuit(shots: int, offline_simulator_no_noise: AQTResource) -> N
     assert job.result().get_counts() == {"0": shots}
 
 
+def test_circuit_success_lifecycle() -> None:
+    """Go through the lifecycle of a successful single-circuit job.
+    Check that the job status visits the states QUEUED, RUNNING, and DONE."""
+    backend = TestResource(min_queued_duration=0.5, min_running_duration=0.5)
+    backend.options.update_options(query_period_seconds=0.1)
+
+    qc = QuantumCircuit(1)
+    qc.measure_all()
+
+    job = qiskit.execute(qc, backend)
+
+    assert job.status() is JobStatus.QUEUED
+
+    while job.status() is JobStatus.QUEUED:
+        continue
+
+    assert job.status() is JobStatus.RUNNING
+
+    while job.status() is JobStatus.RUNNING:
+        continue
+
+    assert job.status() is JobStatus.DONE
+
+
 def test_error_circuit() -> None:
     """Check that errors in circuits are reported in the `errors` field of the Qiskit
     result metadata, where the keys are the circuit job ids."""
@@ -58,10 +83,35 @@ def test_error_circuit() -> None:
     assert errors == [(IsUUID, backend.error_message)]
 
 
+def test_cancelled_circuit() -> None:
+    backend = TestResource(always_cancel=True)
+
+    qc = QuantumCircuit(1)
+    qc.measure_all()
+
+    result = qiskit.execute(qc, backend).result()
+    assert result.success is False
+
+
 def test_non_compliant_resource() -> None:
     """Check that if the resource sends back ill-formed payloads, the job raises a
     RuntimeError."""
     backend = TestResource(always_invalid=True)
+    backend.options.update_options(query_period_seconds=0.1)
+
+    qc = QuantumCircuit(1)
+    qc.measure_all()
+
+    with pytest.raises(RuntimeError) as excinfo:
+        qiskit.execute(qc, backend).result()
+
+    assert "Unexpected error while retrieving job status" in str(excinfo)
+
+
+def test_non_compliant_resource_invalid_status() -> None:
+    """Check that if the resource sends back a valid payload with an invalid status
+    name, the job raises a RuntimeError."""
+    backend = TestResource(always_invalid_status=True)
     backend.options.update_options(query_period_seconds=0.1)
 
     qc = QuantumCircuit(1)

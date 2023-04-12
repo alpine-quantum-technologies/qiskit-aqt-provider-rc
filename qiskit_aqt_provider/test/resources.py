@@ -105,6 +105,7 @@ class TestResource(AQTResource):
         min_queued_duration: float = 0.0,
         min_running_duration: float = 0.0,
         always_invalid: bool = False,
+        always_invalid_status: bool = False,
         always_cancel: bool = False,
         always_error: bool = False,
         error_message: str = "",
@@ -115,6 +116,7 @@ class TestResource(AQTResource):
             min_queued_duration: minimum time in seconds spent by all jobs in the QUEUED state
             min_running_duration: minimum time in seconds spent by all jobs in the ONGOING state
             always_invalid: always return invalid payloads when queried
+            always_invalid_status: always return a valid payload but with an invalid status
             always_cancel: always cancel the jobs directly after submission
             always_error: always finish execution with an error
             error_message: the error message returned by failed jobs. Implies `always_error`.
@@ -129,6 +131,7 @@ class TestResource(AQTResource):
         self.min_queued_duration = min_queued_duration
         self.min_running_duration = min_running_duration
         self.always_invalid = always_invalid
+        self.always_invalid_status = always_invalid_status
         self.always_cancel = always_cancel
         self.always_error = always_error or error_message
         self.error_message = error_message or str(uuid.uuid4())
@@ -148,6 +151,9 @@ class TestResource(AQTResource):
 
         if self.always_invalid:
             return {"invalid": "invalid"}
+
+        if self.always_invalid_status:
+            return {"response": {"status": "invalid"}}
 
         if job.status is JobStatus.QUEUED and (now - job.time_queued) > self.min_queued_duration:
             job.submit()
