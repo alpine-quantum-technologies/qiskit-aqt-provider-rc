@@ -72,6 +72,7 @@ pytest-sugar = "^0.9.6"
 qiskit-experiments = "^0.4.0"
 qiskit-sphinx-theme = ">=1.7.0"
 qiskit-terra = {version = ">=0.23.2", extras = ["visualization"]}
+ruff = "^0.0.261"
 sphinx = ">=5.3"
 sympy = "^1.11.1"
 typer = "^0.7.0"
@@ -109,6 +110,19 @@ reportDuplicateImport = "error"
 
 pythonVersion = "3.8"
 pythonPlatform = "Linux"
+
+[tool.ruff]
+extend-select = ["W", "ERA", "RUF", "I", "C90"]
+ignore = [
+    "D100",  # missing docstring in public module
+    "D101",  # missing docstring in public class
+    "D104",  # missing docstring in public package
+    "D107",  # missing docstring in __init__
+    "D211",  # no-blank-line-before-class (incompatible with D203)
+    "D213",  # multiline-summary-second-line (incompatible with D212)
+]
+line-length = 100
+target-version = 'py38'
 
 [tool.pylint.BASIC]
 good-names = [

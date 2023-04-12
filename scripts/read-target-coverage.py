@@ -28,7 +28,10 @@ def main(pyproject_path: Path = typer.Argument(default_pyproject_path)) -> None:
     'fail_under' field of the 'coverage' tool configuration."""
     with open(pyproject_path, encoding="utf-8") as fp:
         data = tomlkit.load(fp)
-        print(float(data["tool"]["coverage"]["report"]["fail_under"]) / 100.0)  # type: ignore[index, arg-type]
+        print(
+            float(data["tool"]["coverage"]["report"]["fail_under"])  # type: ignore[index, arg-type]
+            / 100.0
+        )
 
 
 if __name__ == "__main__":
