@@ -19,7 +19,7 @@ from qiskit.providers.exceptions import JobTimeoutError
 
 from qiskit_aqt_provider.aqt_job import AQTJob
 from qiskit_aqt_provider.aqt_resource import AQTResource
-from qiskit_aqt_provider.test.resources import SlowResource
+from qiskit_aqt_provider.test.resources import TestResource
 
 
 def test_options_set_query_timeout(offline_simulator_no_noise: AQTResource) -> None:
@@ -76,7 +76,7 @@ def test_query_timeout_propagation() -> None:
     timeout = 1.0
     assert timeout < response_delay
 
-    backend = SlowResource(response_delay)
+    backend = TestResource(min_running_duration=response_delay)
     backend.options.update_options(query_timeout_seconds=timeout, query_period_seconds=0.5)
 
     qc = QuantumCircuit(1)
@@ -99,13 +99,14 @@ def test_query_period_propagation() -> None:
     timeout_seconds = 3.0
     assert timeout_seconds > response_delay  # won't time out
 
-    backend = SlowResource(response_delay)
+    backend = TestResource(min_running_duration=response_delay)
     backend.options.update_options(
         query_timeout_seconds=timeout_seconds, query_period_seconds=period_seconds
     )
 
     qc = QuantumCircuit(1)
     qc.rx(3.14, 0)
+    qc.measure_all()
 
     job = backend.run(qc)
 
