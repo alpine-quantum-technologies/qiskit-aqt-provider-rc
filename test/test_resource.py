@@ -18,7 +18,12 @@ from qiskit import QuantumCircuit
 from qiskit.providers.exceptions import JobTimeoutError
 
 from qiskit_aqt_provider.aqt_job import AQTJob
-from qiskit_aqt_provider.aqt_resource import AQTResource
+from qiskit_aqt_provider.aqt_provider import AQTProvider
+from qiskit_aqt_provider.aqt_resource import (
+    ApiResource,
+    AQTResource,
+    OfflineSimulatorResource,
+)
 from qiskit_aqt_provider.test.resources import TestResource
 
 
@@ -116,3 +121,14 @@ def test_query_period_propagation() -> None:
     lower_bound = math.floor(response_delay / period_seconds)
     upper_bound = math.ceil(response_delay / period_seconds) + 1
     assert lower_bound <= mocked_status.call_count <= upper_bound
+
+
+def test_offline_simulator_invalid_api_resource() -> None:
+    """Check that one cannot instantiate an OfflineSimulatorResource on an API resource
+    that is no offline simulator."""
+    with pytest.raises(ValueError):
+        OfflineSimulatorResource(
+            AQTProvider(""),
+            "default",
+            ApiResource(name="dummy", id="dummy", type="device"),
+        )

@@ -96,7 +96,7 @@ class TestJob:  # pylint: disable=too-many-instance-attributes
         assert False, "unreachable"  # pragma: no cover
 
 
-class TestResource(AQTResource):
+class TestResource(AQTResource):  # pylint: disable=too-many-instance-attributes
     """AQT computing resource with hooks for triggering different execution scenarios."""
 
     def __init__(
