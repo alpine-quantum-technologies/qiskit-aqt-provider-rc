@@ -16,7 +16,6 @@ This tests whether the circuit pre-conditioning and results formatting works as
 expected.
 """
 
-
 from fractions import Fraction
 from math import pi
 from typing import List

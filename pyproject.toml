@@ -65,7 +65,6 @@ mistletoe = "^1.0.1"
 mypy = "=1.0.1"
 poethepoet = "^0.18.1"
 pre-commit = "^3.1.1"
-pylint = "2.16.*"
 pyproject-fmt = "^0.9.2"
 pytest = ">=7"
 pytest-sugar = "^0.9.6"
@@ -169,41 +168,6 @@ target-version = 'py38'
 [tool.ruff.pydocstyle]
 convention = "google"
 
-[tool.pylint.BASIC]
-good-names = [
-    "qc",  # quantum circuit
-    "qr",  # quantum register
-    "q0",  # qubit 0
-    "q1",  # qubit 1
-    "i",  # index
-    "k",  # index
-    "f",  # function
-    "g",  # function
-    "x",  # mathematic function argument
-    "y",  # mathematic function argument
-    "z",  # mathematic function argument
-]
-
-[tool.pylint."MESSAGES CONTROL"]
-disable = [
-    "fixme",  # don't show FIXME and TODO notes as linter warnings
-    "typecheck",  # mypy
-    "format",  # black
-    "line-too-long",  # black
-    "missing-docstring",  # too verbose at the moment
-    "too-few-public-methods",
-    "duplicate-code",  # too verbose
-    "wrong-import-order",  # isort
-    "ungrouped-imports",  # isort
-    "protected-access",  # too annoying
-]
-
-[tool.pylint."REPORTS"]
-# enabling reports causes the runtime to double
-# see https://github.com/PyCQA/pylint/issues/3443
-reports = false
-score = false
-
 [tool.coverage.report]
 fail_under = 93
 
@@ -219,21 +183,19 @@ default = ""
 
 [tool.poe.tasks.format]
 shell = """
-isort .
 black .
 pyproject-fmt .
 """
 
 [tool.poe.tasks.format_check]
 shell = """
-isort --check .
 black --check .
 pyproject-fmt --check .
 """
 
 [tool.poe.tasks]
-pylint = "pylint qiskit_aqt_provider test"
+ruff = "ruff qiskit_aqt_provider test"
 mypy = "mypy ."
-lint = ["mypy", "pylint"]
+lint = ["mypy", "ruff"]
 docs = "sphinx-build -b html -W docs docs/_build"
 all = ["test", "lint", "docs"]
