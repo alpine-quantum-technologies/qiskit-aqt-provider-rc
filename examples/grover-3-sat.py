@@ -67,8 +67,7 @@ if __name__ == "__main__":
 
     # Problem definition
     sat_problem = ThreeSatProblem(
-        textwrap.dedent(
-            """
+        textwrap.dedent("""
             c example DIMACS-CNF 3-SAT
             p cnf 3 5
             -1 -2 -3 0
@@ -76,8 +75,7 @@ if __name__ == "__main__":
             1 2 -3 0
             1 -2 -3 0
             -1 2 3 0
-            """
-        ),
+            """),
         num_solutions=3,
     )
 
