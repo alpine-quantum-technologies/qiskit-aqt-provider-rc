@@ -32,6 +32,7 @@ from qiskit_experiments.library import QuantumVolume
 from qiskit_aqt_provider.aqt_resource import AQTResource
 from qiskit_aqt_provider.test.circuits import qft_circuit
 from qiskit_aqt_provider.test.resources import TestResource
+from qiskit_aqt_provider.test.timeout import timeout
 
 
 @pytest.mark.parametrize("shots", [200])
@@ -57,13 +58,15 @@ def test_circuit_success_lifecycle() -> None:
 
     assert job.status() is JobStatus.QUEUED
 
-    while job.status() is JobStatus.QUEUED:
-        continue
+    with timeout(2.0):
+        while job.status() is JobStatus.QUEUED:
+            continue
 
     assert job.status() is JobStatus.RUNNING
 
-    while job.status() is JobStatus.RUNNING:
-        continue
+    with timeout(2.0):
+        while job.status() is JobStatus.RUNNING:
+            continue
 
     assert job.status() is JobStatus.DONE
 
