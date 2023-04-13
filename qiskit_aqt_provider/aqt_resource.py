@@ -153,11 +153,11 @@ class AQTResource(Backend):
 
         api_job = response.get("job")
         if api_job is None:
-            raise RuntimeError("API response does not contain field 'job'.")
+            raise ValueError("API response does not contain field 'job'.")
 
         job_id = api_job.get("job_id")
         if job_id is None:
-            raise RuntimeError("API response does not contain field 'job.job_id'.")
+            raise ValueError("API response does not contain field 'job.job_id'.")
 
         return str(job_id)
 
