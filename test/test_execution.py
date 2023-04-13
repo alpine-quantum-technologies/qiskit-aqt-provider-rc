@@ -377,7 +377,7 @@ def test_period_finding_circuit(offline_simulator_no_noise: AQTResource) -> None
         b2 = k2.denominator
 
         r = int(np.lcm(b1, b2))
-        results.append(f(int(r)) == f(0))
+        results.append(f(r) == f(0))
 
     # more than 50% of the attempts were successful
     assert len(results) > n_attempts * 0.5
