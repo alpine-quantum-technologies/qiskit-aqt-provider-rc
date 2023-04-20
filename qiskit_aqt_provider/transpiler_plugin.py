@@ -12,7 +12,7 @@
 
 import math
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import Callable, List, Literal, Optional, Tuple, Type, Union, overload
 
 import numpy as np
 from qiskit import QuantumCircuit
@@ -20,11 +20,67 @@ from qiskit.circuit import Gate, Instruction
 from qiskit.circuit.library import RGate, RXGate, RXXGate, RZGate
 from qiskit.circuit.tools import pi_check
 from qiskit.dagcircuit import DAGCircuit
+from qiskit.exceptions import QiskitError
 from qiskit.transpiler.basepasses import BasePass, TransformationPass
 from qiskit.transpiler.passmanager import PassManager
 from qiskit.transpiler.passmanager_config import PassManagerConfig
 from qiskit.transpiler.preset_passmanagers import common
 from qiskit.transpiler.preset_passmanagers.plugin import PassManagerStagePlugin
+
+
+@overload
+def with_qiskit_error(
+    run_func: Literal[None], /, exc_types: Tuple[Type[BaseException], ...] = ...
+) -> Callable[
+    [Callable[[TransformationPass, DAGCircuit], DAGCircuit]],
+    Callable[[TransformationPass, DAGCircuit], DAGCircuit],
+]:
+    ...  # pragma: no cover
+
+
+@overload
+def with_qiskit_error(
+    run_func: Callable[[BasePass, DAGCircuit], DAGCircuit],
+    /,
+    exc_types: Tuple[Type[BaseException], ...] = ...,
+) -> Callable[[BasePass, DAGCircuit], DAGCircuit]:
+    ...  # pragma: no cover
+
+
+def with_qiskit_error(
+    run_func: Optional[Callable[[BasePass, DAGCircuit], DAGCircuit]] = None,
+    /,
+    exc_types: Tuple[Type[BaseException], ...] = (Exception,),
+) -> Union[
+    Callable[
+        [Callable[[BasePass, DAGCircuit], DAGCircuit]],
+        Callable[[BasePass, DAGCircuit], DAGCircuit],
+    ],
+    Callable[[BasePass, DAGCircuit], DAGCircuit],
+]:
+    """Decorator for `BasePass.run` methods to raise `QiskitError` on execution errors.
+
+    Args:
+        run_func: method to decorate. If none, act as a decorator factory
+        exc_types: which error types to re-raise as `QiskitError`.
+    """
+    # TODO: use ParamSpec once py310 is the lowest supported version
+
+    def impl(
+        func: Callable[[BasePass, DAGCircuit], DAGCircuit]
+    ) -> Callable[[BasePass, DAGCircuit], DAGCircuit]:
+        def wrapper(self: BasePass, dag: DAGCircuit) -> DAGCircuit:
+            try:
+                return func(self, dag)
+            except exc_types as e:
+                raise QiskitError from e
+
+        return wrapper
+
+    if run_func is not None:
+        return impl(run_func)
+
+    return impl  # pragma: no cover
 
 
 def rewrite_rx_as_r(theta: float) -> Instruction:
@@ -37,6 +93,7 @@ def rewrite_rx_as_r(theta: float) -> Instruction:
 class RewriteRxAsR(TransformationPass):
     """Rewrite Rx(θ) as R(θ, φ) with θ ∈ [0, π] and φ ∈ [0, 2π]."""
 
+    @with_qiskit_error
     def run(self, dag: DAGCircuit) -> DAGCircuit:
         for node in dag.gate_nodes():
             if node.name == "rx":
@@ -127,6 +184,7 @@ def wrap_rxx_angle(theta: float) -> Instruction:
 class WrapRxxAngles(TransformationPass):
     """Wrap Rxx angles to [-π/2, π/2]."""
 
+    @with_qiskit_error
     def run(self, dag: DAGCircuit) -> DAGCircuit:
         for node in dag.gate_nodes():
             if node.name == "rxx":
