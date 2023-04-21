@@ -16,9 +16,9 @@ from typing import Callable
 
 import pytest
 from qiskit.circuit import Parameter, QuantumCircuit
-from qiskit.exceptions import QiskitError
 from qiskit.primitives import BackendSampler, BaseSampler, Sampler
 from qiskit.providers import Backend
+from qiskit.transpiler.exceptions import TranspilerError
 
 from qiskit_aqt_provider.aqt_resource import AQTResource
 
@@ -58,7 +58,7 @@ def test_circuit_sampling_opflow(offline_simulator_no_noise: AQTResource) -> Non
         # transpiling the unbound circuit failed (like the opflow sampler does).
         # Sampling a parametric circuit with an AQT backend is therefore not supported.
         pytest.param(
-            lambda backend: BackendSampler(backend), marks=pytest.mark.xfail(raises=QiskitError)
+            lambda backend: BackendSampler(backend), marks=pytest.mark.xfail(raises=TranspilerError)
         ),
     ],
 )

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* Always raise `QiskitError` on errors in the custom transpilation passes #57
+* Always raise `TranspilerError` on errors in the custom transpilation passes #57
 
 ## qiskit-aqt-provider v0.12.0
 
