@@ -24,6 +24,7 @@ from qiskit.transpiler.exceptions import TranspilerError
 from qiskit_aqt_provider.aqt_resource import AQTResource
 from qiskit_aqt_provider.primitives import AQTSampler
 from qiskit_aqt_provider.test.circuits import assert_circuits_equal
+from qiskit_aqt_provider.test.fixtures import MockSimulator
 
 
 @pytest.mark.skipif(
@@ -105,7 +106,7 @@ def test_circuit_sampling_primitive(
         -33 * pi / 16,
     ],
 )
-def test_aqt_sampler_transpilation(theta: float, offline_simulator_no_noise: AQTResource) -> None:
+def test_aqt_sampler_transpilation(theta: float, offline_simulator_no_noise: MockSimulator) -> None:
     """Check that the AQTSampler passes the same circuit to the backend as a call to
     `qiskit.execute` with the same transpiler call on the bound circuit would.
     """

@@ -15,7 +15,7 @@
 This module is exposed as pytest plugin for this project.
 """
 
-from typing import Iterator, List, Tuple
+from typing import List, Tuple
 
 import pytest
 from qiskit.circuit import QuantumCircuit
@@ -38,6 +38,24 @@ class MockSimulator(OfflineSimulatorResource):
         self.submit_call_args: List[Tuple[QuantumCircuit, int]] = []
 
     def submit(self, circuit: QuantumCircuit, shots: int) -> str:
+        """Submit the circuit for shots executions on the backend.
+
+        Record the passed arguments in `submit_call_args`.
+
+        Try to convert the circuit to the AQT JSON wire format.
+
+        Args:
+            circuit: the circuit to execute on the simulator
+            shots: number of repetitions.
+
+        Raises:
+            ValueError: the circuit cannot be converted to the AQT JSON wire format.
+        """
+        try:
+            _ = circuit_to_aqt(circuit, shots=shots)
+        except Exception as e:  # noqa: BLE001
+            raise ValueError("Circuit cannot be converted to AQT JSON format:\n{circuit}") from e
+
         self.submit_call_args.append((circuit, shots))
         return super().submit(circuit, shots)
 
@@ -48,15 +66,6 @@ class MockSimulator(OfflineSimulatorResource):
 
 
 @pytest.fixture(name="offline_simulator_no_noise")
-def fixture_offline_simulator_no_noise() -> Iterator[MockSimulator]:
+def fixture_offline_simulator_no_noise() -> MockSimulator:
     """Noiseless offline simulator resource."""
-    resource = MockSimulator()
-    yield resource
-
-    # try to convert all circuits that were passed to the simulator
-    # to the AQT API JSON format.
-    for circuit, shots in resource.submit_call_args:
-        try:
-            _ = circuit_to_aqt(circuit, shots=shots)
-        except Exception:  # pragma: no cover  # noqa: BLE001
-            pytest.fail(f"Circuit cannot be converted to the AQT JSON format:\n{circuit}")
+    return MockSimulator()
