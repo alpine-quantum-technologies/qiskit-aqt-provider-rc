@@ -2484,7 +2484,7 @@ files = [
 name = "pydantic"
 version = "1.10.7"
 description = "Data validation and settings management using python type hints"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -4244,4 +4244,4 @@ examples = ["tweedledum"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "7a38b814993590473e661e7df336c91227d27c51fa3c1446beca0d010340bbe6"
+content-hash = "ff1dbdcefb89eef6a8f5fa92239414eaf307967ce135f804355d38717eab9692"
