@@ -34,6 +34,8 @@ from qiskit.providers.jobstatus import JobStatus
 from qiskit.result.result import Result
 from qiskit.utils.lazy_tester import contextlib
 
+from qiskit_aqt_provider import api_models
+
 if TYPE_CHECKING:  # pragma: no cover
     from qiskit_aqt_provider.aqt_resource import AQTResource
 
@@ -97,7 +99,7 @@ class AQTJob(JobV1):
         self.circuits = circuits
 
         self._jobs: Dict[
-            str, Union[JobFinished, JobFailed, JobQueued, JobOngoing, JobCancelled]
+            uuid.UUID, Union[JobFinished, JobFailed, JobQueued, JobOngoing, JobCancelled]
         ] = {}
         self._jobs_lock = threading.Lock()
 
@@ -191,12 +193,12 @@ class AQTJob(JobV1):
         )
 
     @property
-    def job_ids(self) -> Set[str]:
+    def job_ids(self) -> Set[uuid.UUID]:
         """The AQT API identifiers of all the circuits evaluated in this Qiskit job."""
         return set(self._jobs)
 
     @property
-    def failed_jobs(self) -> Dict[str, str]:
+    def failed_jobs(self) -> Dict[uuid.UUID, str]:
         """Map of failed job ids to error reports from the API."""
         with self._jobs_lock:
             return {
@@ -219,27 +221,28 @@ class AQTJob(JobV1):
         with self._jobs_lock:
             self._jobs[job_id] = JobQueued()
 
-    def _status_single(self, job_id: str) -> None:
+    def _status_single(self, job_id: uuid.UUID) -> None:
         """Query the status of a single circuit execution.
 
         This method updates the internal life-cycle tracker.
         """
         payload = self._backend.result(job_id)
-        response = payload["response"]
 
         with self._jobs_lock:
-            if response["status"] == "finished":
-                self._jobs[job_id] = JobFinished(samples=response["result"])
-            elif response["status"] == "error":
-                self._jobs[job_id] = JobFailed(error=str(response["message"]))
-            elif response["status"] == "queued":
+            if api_models.Response.is_finished(payload):
+                self._jobs[job_id] = JobFinished(
+                    samples=[[state.__root__ for state in shot] for shot in payload.response.result]
+                )
+            elif api_models.Response.is_error(payload):
+                self._jobs[job_id] = JobFailed(error=payload.response.message)
+            elif api_models.Response.is_queued(payload):
                 self._jobs[job_id] = JobQueued()
-            elif response["status"] == "ongoing":
+            elif api_models.Response.is_ongoing(payload):
                 self._jobs[job_id] = JobOngoing()
-            elif response["status"] == "cancelled":
+            elif api_models.Response.is_cancelled(payload):
                 self._jobs[job_id] = JobCancelled()
-            else:
-                raise RuntimeError(f"API returned unknown job status: {response['status']}.")
+            else:  # pragma: no cover
+                raise RuntimeError("unreachable")
 
     def _aggregate_status(self) -> JobStatus:
         """Aggregate the Qiskit job status from the status of the individual circuit evaluations."""

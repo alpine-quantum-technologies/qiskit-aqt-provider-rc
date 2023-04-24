@@ -670,15 +670,13 @@ files = [
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.18.0"
+version = "0.0.0"
 description = "Datamodel Code Generator"
 category = "dev"
 optional = false
-python-versions = ">=3.7,<4.0"
-files = [
-    {file = "datamodel_code_generator-0.18.0-py3-none-any.whl", hash = "sha256:d8a1a2c1fb115e26ac3880d3b373d14c178849f0c842d6b4738a57ee43beeff0"},
-    {file = "datamodel_code_generator-0.18.0.tar.gz", hash = "sha256:5acf69bcf3c440e90a7d0c7b99ca100c8f6ce0348aa4b3da8ee4f9b0242d164c"},
-]
+python-versions = "^3.7"
+files = []
+develop = false
 
 [package.dependencies]
 argcomplete = ">=1.10,<4.0"
@@ -691,15 +689,21 @@ openapi-spec-validator = ">=0.2.8,<=0.5.1"
 packaging = "*"
 prance = ">=0.18.2,<1.0"
 pydantic = [
-    {version = ">=1.10.0,<2.0.0", extras = ["email"], markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
-    {version = ">=1.5.1,<2.0.0", extras = ["email"], markers = "python_version < \"3.10\""},
-    {version = ">=1.9.0,<2.0.0", extras = ["email"], markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
+    {version = "^1.5.1", extras = ["email"], markers = "python_version < \"3.10\""},
+    {version = "^1.9.0", extras = ["email"], markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
+    {version = "^1.10.0", extras = ["email"], markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
 PySnooper = ">=0.4.1,<2.0.0"
 toml = ">=0.10.0,<1.0.0"
 
 [package.extras]
 http = ["httpx"]
+
+[package.source]
+type = "git"
+url = "https://github.com/airwoodix/datamodel-code-generator"
+reference = "annotated-backport"
+resolved_reference = "396713b2da87df6babf42389eb943ab316ca0b3d"
 
 [[package]]
 name = "debugpy"
@@ -2060,9 +2064,9 @@ files = [
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.20.3", markers = "python_version < \"3.10\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
-    {version = ">=1.20.3", markers = "python_version < \"3.10\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -4240,4 +4244,4 @@ examples = ["tweedledum"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "9b4aec2fbf8958b1063312b07c111c3fa0adb56fe7662f825b0408c1f3c4f8fd"
+content-hash = "7a38b814993590473e661e7df336c91227d27c51fa3c1446beca0d010340bbe6"

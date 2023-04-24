@@ -46,7 +46,7 @@ def default_schema_path() -> Path:
 
 def default_models_path() -> Path:
     """Default destination of generated Pydantic models."""
-    return repo_root() / "qiskit_aqt_provider" / "api_models.py"
+    return repo_root() / "qiskit_aqt_provider" / "api_models_generated.py"
 
 
 def hash_stream(stream: Union[io.RawIOBase, io.BufferedIOBase]) -> str:
