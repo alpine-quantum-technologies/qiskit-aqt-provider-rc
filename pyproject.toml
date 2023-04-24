@@ -211,11 +211,14 @@ black --check .
 pyproject-fmt --check .
 """
 
+[tool.poe.tasks.lint]
+shell = """
+ruff check .
+./scripts/api_models.py check
+"""
+
 [tool.poe.tasks]
 generate-models = "./scripts/api_models.py generate"
-check-models = "./scripts/api_models.py check"
-ruff = "ruff check ."
 mypy = "mypy ."
-lint = ["mypy", "ruff"]
 docs = "sphinx-build -b html -W docs docs/_build"
 all = ["generate-models", "lint", "test", "docs"]

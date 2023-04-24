@@ -11,14 +11,12 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-import hashlib
-import io
 import shlex
 import subprocess
 import sys
+import tempfile
 from functools import lru_cache
 from pathlib import Path
-from typing import Union
 
 import typer
 
@@ -49,17 +47,7 @@ def default_models_path() -> Path:
     return repo_root() / "qiskit_aqt_provider" / "api_models_generated.py"
 
 
-def hash_stream(stream: Union[io.RawIOBase, io.BufferedIOBase]) -> str:
-    """Compute the SHA256 hash of a binary IO stream."""
-    hasher = hashlib.new("sha256")
-
-    buffer = stream.read()
-    hasher.update(buffer or b"")
-
-    return hasher.hexdigest()
-
-
-def generate_models(schema_path: Path) -> bytes:
+def generate_models(schema_path: Path) -> str:
     """Generate Pydantic models from a given schema.
 
     Args:
@@ -74,7 +62,7 @@ def generate_models(schema_path: Path) -> bytes:
         check=True,
     )
 
-    return proc.stdout
+    return proc.stdout.decode()
 
 
 @app.command()
@@ -90,7 +78,7 @@ def generate(
         schema_path: path to the file that contains the schema
         models_path: path of the file to write the generated models to.
     """
-    models_path.write_bytes(generate_models(schema_path))
+    models_path.write_text(generate_models(schema_path))
 
 
 @app.command()
@@ -103,20 +91,20 @@ def check(
     For the check to succeed, `models_path` must contain exactly what the
     generator produces with `schema_path` as input.
     """
-    reference_models = io.BytesIO()
-    reference_models.write(generate_models(schema_path))
-    reference_models.seek(0)
-    reference_hash = hash_stream(reference_models)
+    with tempfile.NamedTemporaryFile(mode="w") as reference_models:
+        filepath = Path(reference_models.name)
+        filepath.write_text(generate_models(schema_path))
 
-    test_hash = ""
-    with models_path.open(mode="rb", buffering=0) as fp:
-        test_hash = hash_stream(fp)
+        proc = subprocess.run(
+            shlex.split(f"diff -u {filepath} {models_path}"),  # noqa: S603
+            capture_output=True,
+        )
 
-    if test_hash != reference_hash:
-        print("FAILED")
-        sys.exit(1)
+        if proc.returncode != 0:
+            print(proc.stdout.decode())
+            sys.exit(proc.returncode)
 
-    print("OK")
+        print("OK")
 
 
 if __name__ == "__main__":

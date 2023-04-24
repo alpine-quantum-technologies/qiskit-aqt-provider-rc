@@ -43,7 +43,7 @@ jobs:
       - name: Check formatting
         run: poetry run poe format_check
       - name: Linting
-        run: poetry run poe ruff
+        run: poetry run poe lint
       - name: Type checking
         run: poetry run poe mypy
       - name: Testing
