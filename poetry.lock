@@ -773,22 +773,6 @@ files = [
 graph = ["objgraph (>=1.7.2)"]
 
 [[package]]
-name = "dirty-equals"
-version = "0.5.0"
-description = "Doing dirty (but extremely useful) things with equals."
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "dirty_equals-0.5.0-py3-none-any.whl", hash = "sha256:23f4108be991e2661c0c81ae6deedc0bd25b3cc0ecdd7482dbad7b2bc795308f"},
-    {file = "dirty_equals-0.5.0.tar.gz", hash = "sha256:f107137476d784b7f86757a3e1291fe11e8166d4720df9c02a3ee5dfa595e1fe"},
-]
-
-[package.dependencies]
-pytz = ">=2021.3"
-typing-extensions = ">=4.0.1"
-
-[[package]]
 name = "distlib"
 version = "0.3.6"
 description = "Distribution utilities"
@@ -4263,4 +4247,4 @@ examples = ["tweedledum"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "be0c9c75f37a91995e12fffcff428ed661262c13bcf70fc8abadb06d39d03be6"
+content-hash = "9a59ba01aaf19748951f42e51ac2e22101f05b86a5fb909f626b3590579fa568"

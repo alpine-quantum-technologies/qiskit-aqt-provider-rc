@@ -10,6 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
+import json
 import math
 import uuid
 from unittest import mock
@@ -141,6 +142,26 @@ def test_offline_simulator_invalid_api_resource() -> None:
         )
 
 
+def test_offline_simulator_invalid_job_id(offline_simulator_no_noise: MockSimulator) -> None:
+    """Check that the offline simulator raises UnknownJobError if the job id passed
+    to `result()` is invalid.
+    """
+    qc = QuantumCircuit(1)
+    qc.measure_all()
+
+    job = offline_simulator_no_noise.run([qc], shots=1)
+    job_id = uuid.UUID(hex=job.job_id())
+    invalid_job_id = uuid.uuid4()
+    assert invalid_job_id != job_id
+
+    with pytest.raises(api_models.UnknownJobError, match=str(invalid_job_id)):
+        offline_simulator_no_noise.result(invalid_job_id)
+
+    # querying the actual job is successful
+    result = offline_simulator_no_noise.result(job_id)
+    assert result.job.job_id == job_id
+
+
 def test_submit_valid_response(httpx_mock: HTTPXMock) -> None:
     """Check that AQTResource.submit passes the authorization token and
     extracts the correct job_id when the response payload is valid.
@@ -155,16 +176,18 @@ def test_submit_valid_response(httpx_mock: HTTPXMock) -> None:
 
         return httpx.Response(
             status_code=httpx.codes.OK,
-            json=api_models.Response.queued(
-                job_id=expected_job_id,
-                resource_id=backend._resource["id"],
-                workspace_id=backend._workspace,
-            ).json(),
+            json=json.loads(
+                api_models.Response.queued(
+                    job_id=expected_job_id,
+                    resource_id=backend._resource["id"],
+                    workspace_id=backend._workspace,
+                ).json()
+            ),
         )
 
     httpx_mock.add_callback(handle_submit, method="POST")
 
-    job_id = backend.submit(empty_circuit(2), shots=10)
+    job_id = backend.submit([empty_circuit(2)], shots=10)
     assert job_id == expected_job_id
 
 
@@ -176,7 +199,7 @@ def test_submit_bad_request(httpx_mock: HTTPXMock) -> None:
     httpx_mock.add_response(status_code=httpx.codes.BAD_REQUEST)
 
     with pytest.raises(httpx.HTTPError):
-        backend.submit(empty_circuit(2), shots=10)
+        backend.submit([empty_circuit(2)], shots=10)
 
 
 def test_result_valid_response(httpx_mock: HTTPXMock) -> None:
@@ -195,7 +218,7 @@ def test_result_valid_response(httpx_mock: HTTPXMock) -> None:
         assert request.headers["sdk"] == "qiskit"
         assert request.headers["authorization"] == f"Bearer {token}"
 
-        return httpx.Response(status_code=httpx.codes.OK, json=payload.json())
+        return httpx.Response(status_code=httpx.codes.OK, json=json.loads(payload.json()))
 
     httpx_mock.add_callback(handle_result, method="GET")
 
@@ -221,7 +244,7 @@ def test_result_unknown_job(httpx_mock: HTTPXMock) -> None:
     backend = DummyResource("")
     job_id = uuid.uuid4()
 
-    httpx_mock.add_response(json=api_models.Response.unknown_job(job_id=job_id).json())
+    httpx_mock.add_response(json=json.loads(api_models.Response.unknown_job(job_id=job_id).json()))
 
     with pytest.raises(api_models.UnknownJobError, match=str(job_id)):
         backend.result(job_id)

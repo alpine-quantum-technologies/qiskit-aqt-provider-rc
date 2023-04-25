@@ -12,7 +12,8 @@
 
 import abc
 import warnings
-from typing import Any, Dict, List, Type, TypeVar, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
 import httpx
@@ -29,7 +30,7 @@ from typing_extensions import TypedDict
 
 from qiskit_aqt_provider import api_models
 from qiskit_aqt_provider.aqt_job import AQTJob
-from qiskit_aqt_provider.circuit_to_aqt import circuit_to_aqt_job
+from qiskit_aqt_provider.circuit_to_aqt import circuits_to_aqt_job
 from qiskit_aqt_provider.constants import REQUESTS_TIMEOUT
 
 
@@ -156,22 +157,23 @@ class AQTResource(Backend):
         self.options.set_validator("query_timeout_seconds", OptionalFloat)
         self.options.set_validator("query_period_seconds", Float)
 
-    def submit(self, circuit: QuantumCircuit, shots: int) -> UUID:
-        """Submit a circuit.
+    def submit(self, circuits: List[QuantumCircuit], shots: int) -> UUID:
+        """Submit a quantum circuits job to the AQT backend.
 
-        Parameters:
-            circuit: quantum circuit to execute on the backend
-            shots: number repetitions of the circuit
+        Args:
+            circuits: circuits to execute
+            shots: number of repetitions per circuit.
 
         Returns:
-            The unique identifier for the submitted job.
+            The unique identifier of the submitted job.
         """
-        payload = circuit_to_aqt_job(circuit, shots=shots)
+        payload = circuits_to_aqt_job(circuits, shots)
 
         url = f"{self.url}/submit/{self._workspace}/{self._resource['id']}"
-        req = httpx.post(url, json=payload.json(), headers=self.headers, timeout=REQUESTS_TIMEOUT)
+
+        req = httpx.post(url, json=payload.dict(), headers=self.headers, timeout=REQUESTS_TIMEOUT)
         req.raise_for_status()
-        return api_models.Response.parse_raw(req.json()).job.job_id
+        return api_models.Response.parse_obj(req.json()).job.job_id
 
     def result(self, job_id: UUID) -> api_models.JobResponse:
         """Query the result for a specific job.
@@ -185,7 +187,7 @@ class AQTResource(Backend):
         url = f"{self.url}/result/{job_id}"
         req = httpx.get(url, headers=self.headers, timeout=REQUESTS_TIMEOUT)
         req.raise_for_status()
-        return api_models.Response.parse_raw(req.json())
+        return api_models.Response.parse_obj(req.json())
 
     def configuration(self) -> BackendConfiguration:
         warnings.warn(
@@ -234,9 +236,9 @@ class AQTResource(Backend):
     def get_translation_stage_plugin(self) -> str:
         return "aqt"
 
-    def run(self, run_input: Union[QuantumCircuit, List[QuantumCircuit]], **options: Any) -> AQTJob:
-        if not isinstance(run_input, list):
-            run_input = [run_input]
+    def run(self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **options: Any) -> AQTJob:
+        if not isinstance(circuits, list):
+            circuits = [circuits]
 
         unknown_options = set(options) - set(self.options.__dict__ or {})
         if unknown_options:
@@ -249,7 +251,7 @@ class AQTResource(Backend):
 
         shots = options.get("shots", self.options.shots)
 
-        job = AQTJob(self, circuits=run_input, shots=shots)
+        job = AQTJob(self, circuits, shots)
         job.submit()
         return job
 
@@ -274,6 +276,9 @@ def qubit_states_from_int(state: int, num_qubits: int) -> List[int]:
         >>> qubit_states_from_int(0b11, 3)
         [1, 1, 0]
 
+        >>> qubit_states_from_int(0b01, 3)
+        [1, 0, 0]
+
         >>> qubit_states_from_int(123, 7)
         [1, 1, 0, 1, 1, 1, 1]
 
@@ -287,6 +292,17 @@ def qubit_states_from_int(state: int, num_qubits: int) -> List[int]:
     return [(state >> qubit) & 1 for qubit in range(num_qubits)]
 
 
+@dataclass(frozen=True)
+class SimulatorJob:
+    job: AerJob
+    circuits: List[QuantumCircuit]
+    shots: int
+
+    @property
+    def job_id(self) -> UUID:
+        return UUID(hex=self.job.job_id())
+
+
 class OfflineSimulatorResource(AQTResource):
     """AQT-compatible offline simulator resource that uses the Qiskit-Aer backend."""
 
@@ -297,28 +313,65 @@ class OfflineSimulatorResource(AQTResource):
         # TODO: also support a noisy simulator
         super().__init__(provider, workspace, resource)
 
-        self.jobs: Dict[UUID, AerJob] = {}
+        self.job: Optional[SimulatorJob] = None
         self.simulator = AerSimulator(method="statevector")
 
-    def submit(self, circuit: QuantumCircuit, shots: int) -> UUID:
-        job = self.simulator.run(circuit, shots=shots)
-        job_id = UUID(hex=job.job_id())
-        self.jobs[job_id] = job
-        return job_id
+    def submit(self, circuits: List[QuantumCircuit], shots: int) -> UUID:
+        """Submit circuits for execution on the simulator.
+
+        Args:
+            circuits: circuits to execute
+            shots: number of repetitions per circuit.
+
+        Returns:
+            Unique identifier of the simulator job.
+        """
+        self.job = SimulatorJob(
+            job=self.simulator.run(circuits, shots=shots),
+            circuits=circuits,
+            shots=shots,
+        )
+        return self.job.job_id
 
     def result(self, job_id: UUID) -> api_models.JobResponse:
-        qiskit_result = self.jobs[job_id].result()
-        counts = qiskit_result.data()["counts"]
-        num_qubits = qiskit_result.results[0].header.n_qubits
-        samples = []
-        for hex_state, occurences in counts.items():
-            samples.extend(
-                [qubit_states_from_int(int(hex_state, 16), num_qubits) for _ in range(occurences)]
-            )
+        """Query results for a simulator job.
+
+        Args:
+            job_id: identifier of the job to retrieve results for.
+
+        Returns:
+            AQT API payload with the job results.
+
+        Raises:
+            UnknownJobError: the passed identifier doesn't correspond to a simulator job
+            on this resource.
+        """
+        if self.job is None or job_id != self.job.job_id:
+            raise api_models.UnknownJobError(str(job_id))
+
+        qiskit_result = self.job.job.result()
+
+        results: Dict[str, List[List[int]]] = {}
+        for circuit_index, circuit in enumerate(self.job.circuits):
+            samples: List[List[int]] = []
+
+            # Use data()["counts"] instead of get_counts() to access the raw counts
+            # instead of the classical memory-mapped ones.
+            counts: Dict[str, int] = qiskit_result.data(circuit_index)["counts"]
+
+            for hex_state, occurences in counts.items():
+                samples.extend(
+                    [
+                        qubit_states_from_int(int(hex_state, 16), circuit.num_qubits)
+                        for _ in range(occurences)
+                    ]
+                )
+
+            results[str(circuit_index)] = samples
 
         return api_models.Response.finished(
             job_id=job_id,
             workspace_id=self._workspace,
             resource_id=self._resource["id"],
-            samples=samples,
+            results=results,
         )
