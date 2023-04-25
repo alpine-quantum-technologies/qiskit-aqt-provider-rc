@@ -16,7 +16,7 @@ from typing import List, Union
 from uuid import UUID
 
 from qiskit.providers.exceptions import JobError
-from typing_extensions import TypeAlias, TypeGuard
+from typing_extensions import TypeAlias
 
 from qiskit_aqt_provider import api_models_generated as api_models
 from qiskit_aqt_provider.api_models_generated import (
@@ -117,10 +117,6 @@ class Response:
         )
 
     @staticmethod
-    def is_queued(response: JobResponse) -> TypeGuard[api_models.JobResponseRRQueued]:
-        return isinstance(response, api_models.JobResponseRRQueued)
-
-    @staticmethod
     def ongoing(*, job_id: UUID, workspace_id: str, resource_id: str) -> JobResponse:
         """Ongoing job."""
         return api_models.JobResponseRROngoing(
@@ -129,10 +125,6 @@ class Response:
             ),
             response=api_models.RROngoing(),
         )
-
-    @staticmethod
-    def is_ongoing(response: JobResponse) -> TypeGuard[api_models.JobResponseRROngoing]:
-        return isinstance(response, api_models.JobResponseRROngoing)
 
     @staticmethod
     def finished(
@@ -154,10 +146,6 @@ class Response:
         )
 
     @staticmethod
-    def is_finished(response: JobResponse) -> TypeGuard[api_models.JobResponseRRFinished]:
-        return isinstance(response, api_models.JobResponseRRFinished)
-
-    @staticmethod
     def error(*, job_id: UUID, workspace_id: str, resource_id: str, message: str) -> JobResponse:
         """Failed job."""
         return api_models.JobResponseRRError(
@@ -168,10 +156,6 @@ class Response:
         )
 
     @staticmethod
-    def is_error(response: JobResponse) -> TypeGuard[api_models.JobResponseRRError]:
-        return isinstance(response, api_models.JobResponseRRError)
-
-    @staticmethod
     def cancelled(*, job_id: UUID, workspace_id: str, resource_id: str) -> JobResponse:
         """Cancelled job."""
         return api_models.JobResponseRRCancelled(
@@ -180,10 +164,6 @@ class Response:
             ),
             response=api_models.RRCancelled(),
         )
-
-    @staticmethod
-    def is_cancelled(response: JobResponse) -> TypeGuard[api_models.JobResponseRRCancelled]:
-        return isinstance(response, api_models.JobResponseRRCancelled)
 
     @staticmethod
     def unknown_job(*, job_id: UUID) -> api_models.UnknownJob:

@@ -33,8 +33,9 @@ from qiskit.providers import JobV1
 from qiskit.providers.jobstatus import JobStatus
 from qiskit.result.result import Result
 from qiskit.utils.lazy_tester import contextlib
+from typing_extensions import assert_never
 
-from qiskit_aqt_provider import api_models
+from qiskit_aqt_provider import api_models_generated
 
 if TYPE_CHECKING:  # pragma: no cover
     from qiskit_aqt_provider.aqt_resource import AQTResource
@@ -229,20 +230,21 @@ class AQTJob(JobV1):
         payload = self._backend.result(job_id)
 
         with self._jobs_lock:
-            if api_models.Response.is_finished(payload):
+            # TODO: why don't user-defined TypeGuards narrow the type properly?
+            if isinstance(payload, api_models_generated.JobResponseRRQueued):
+                self._jobs[job_id] = JobQueued()
+            elif isinstance(payload, api_models_generated.JobResponseRROngoing):
+                self._jobs[job_id] = JobOngoing()
+            elif isinstance(payload, api_models_generated.JobResponseRRFinished):
                 self._jobs[job_id] = JobFinished(
                     samples=[[state.__root__ for state in shot] for shot in payload.response.result]
                 )
-            elif api_models.Response.is_error(payload):
+            elif isinstance(payload, api_models_generated.JobResponseRRError):
                 self._jobs[job_id] = JobFailed(error=payload.response.message)
-            elif api_models.Response.is_queued(payload):
-                self._jobs[job_id] = JobQueued()
-            elif api_models.Response.is_ongoing(payload):
-                self._jobs[job_id] = JobOngoing()
-            elif api_models.Response.is_cancelled(payload):
+            elif isinstance(payload, api_models_generated.JobResponseRRCancelled):
                 self._jobs[job_id] = JobCancelled()
             else:  # pragma: no cover
-                raise RuntimeError("unreachable")
+                assert_never(payload)
 
     def _aggregate_status(self) -> JobStatus:
         """Aggregate the Qiskit job status from the status of the individual circuit evaluations."""
