@@ -156,6 +156,7 @@ class AQTResource(Backend):
         self.options.set_validator("shots", (1, 200))
         self.options.set_validator("query_timeout_seconds", OptionalFloat)
         self.options.set_validator("query_period_seconds", Float)
+        self.options.set_validator("with_progress_bar", bool)
 
     def submit(self, circuits: List[QuantumCircuit], shots: int) -> UUID:
         """Submit a quantum circuits job to the AQT backend.
@@ -228,6 +229,7 @@ class AQTResource(Backend):
             shots=100,  # number of repetitions per circuit
             query_timeout_seconds=None,  # timeout for job status queries
             query_period_seconds=5,  # interval between job status queries
+            with_progress_bar=True,  # show a progress bar when waiting for job results
         )
 
     def get_scheduling_stage_plugin(self) -> str:
@@ -250,8 +252,9 @@ class AQTResource(Backend):
                 )
 
         shots = options.get("shots", self.options.shots)
+        with_progress_bar = options.get("with_progress_bar", self.options.with_progress_bar)
 
-        job = AQTJob(self, circuits, shots)
+        job = AQTJob(self, circuits, shots, with_progress_bar=with_progress_bar)
         job.submit()
         return job
 

@@ -19,6 +19,7 @@ from typing import (
     DefaultDict,
     Dict,
     List,
+    NoReturn,
     Optional,
     Set,
     Union,
@@ -30,7 +31,7 @@ from qiskit.providers import JobV1
 from qiskit.providers.jobstatus import JobStatus
 from qiskit.result.result import Result
 from qiskit.utils.lazy_tester import contextlib
-from typing_extensions import TypeAlias, assert_never
+from typing_extensions import Self, TypeAlias, assert_never
 
 from qiskit_aqt_provider import api_models_generated
 
@@ -90,10 +91,21 @@ class Progress:
     total_count: int
     """Total number of circuits in the job."""
 
-    @property
-    def percentage(self) -> float:
-        """Progress as percentage."""
-        return self.finished_count / self.total_count * 100.0
+
+@dataclass(frozen=True)
+class _MockProgressBar:
+    """tqdm-compatible progress bar mock."""
+
+    n: int = 0
+
+    def update(self, step: int) -> None:
+        pass
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(*args) -> None:
+        ...
 
 
 class AQTJob(JobV1):
@@ -104,16 +116,20 @@ class AQTJob(JobV1):
         backend: "AQTResource",
         circuits: List[QuantumCircuit],
         shots: int,
+        with_progress_bar: bool,
     ):
         """Initialize a job instance.
 
         Parameters:
             backend: backend to run the job on
             circuits: list of circuits to execute
-            shots: number of repetitions per circuit.
+            shots: number of repetitions per circuit
+            with_progress_bar: whether to display a progress bar
+            when waiting for the job completion.
         """
         super().__init__(backend, "")
 
+        self.with_progress_bar = with_progress_bar
         self.circuits = circuits
         self.shots = shots
         self.status_payload: JobStatusPayload = JobQueued()
@@ -181,11 +197,32 @@ class AQTJob(JobV1):
         Returns:
             The combined result of all circuit evaluations.
         """
-        # one of DONE; CANCELLED, ERROR
-        self.wait_for_final_state(
-            timeout=self._backend.options.query_timeout_seconds,
-            wait=self._backend.options.query_period_seconds,
-        )
+        if self.with_progress_bar:
+            from tqdm import tqdm
+
+            context: Union[tqdm[NoReturn], _MockProgressBar] = tqdm(total=len(self.circuits))
+        else:
+            context = _MockProgressBar()
+
+        with context as progress_bar:
+
+            def callback(
+                job_id: str,  # noqa: ARG001
+                status: JobStatus,  # noqa: ARG001
+                job: AQTJob,
+            ) -> None:
+                progress = job.progress()
+                progress_bar.update(progress.finished_count - progress_bar.n)
+
+            # one of DONE, CANCELLED, ERROR
+            self.wait_for_final_state(
+                timeout=self._backend.options.query_timeout_seconds,
+                wait=self._backend.options.query_period_seconds,
+                callback=callback,
+            )
+
+            # make sure the progress bar completes
+            progress_bar.update(self.progress().finished_count - progress_bar.n)
 
         results = []
 

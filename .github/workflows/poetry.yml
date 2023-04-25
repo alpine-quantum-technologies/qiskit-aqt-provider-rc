@@ -34,7 +34,7 @@ jobs:
       - name: Install main dependencies
         run: |
           poetry run pip install coverage[toml]
-          poetry install --only main --extras examples
+          poetry install --only main --all-extras
       - name: Run examples
         run: |
           poetry run examples/run_all.sh -c
