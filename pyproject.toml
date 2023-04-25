@@ -222,4 +222,4 @@ ruff check .
 generate-models = "./scripts/api_models.py generate"
 mypy = "mypy ."
 docs = "sphinx-build -b html -W docs docs/_build"
-all = ["generate-models", "lint", "test", "docs"]
+all = ["generate-models", "lint", "mypy", "test", "docs"]
