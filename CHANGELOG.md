@@ -7,6 +7,8 @@
 * Auto-generate and use Pydantic models for the API requests payloads #62
 * Use server-side multi-circuits jobs API #63
 * Add job completion progress bar #63
+* Allow overriding any backend option in `AQTResource.run` #64
+* Only return raw memory data when the `memory` option is set #64
 
 ## qiskit-aqt-provider v0.12.0
 
