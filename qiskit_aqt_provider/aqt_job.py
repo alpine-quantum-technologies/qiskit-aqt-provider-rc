@@ -31,6 +31,7 @@ from qiskit.providers import JobV1
 from qiskit.providers.jobstatus import JobStatus
 from qiskit.result.result import Result
 from qiskit.utils.lazy_tester import contextlib
+from tqdm import tqdm
 from typing_extensions import Self, TypeAlias, assert_never
 
 from qiskit_aqt_provider import api_models_generated
@@ -211,8 +212,6 @@ class AQTJob(JobV1):
             The combined result of all circuit evaluations.
         """
         if self.with_progress_bar:
-            from tqdm import tqdm
-
             context: Union[tqdm[NoReturn], _MockProgressBar] = tqdm(total=len(self.circuits))
         else:
             context = _MockProgressBar(total=len(self.circuits))

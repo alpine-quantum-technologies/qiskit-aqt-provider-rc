@@ -229,7 +229,7 @@ class AQTResource(Backend):
         return Options(
             shots=100,  # number of repetitions per circuit
             query_timeout_seconds=None,  # timeout for job status queries
-            query_period_seconds=5,  # interval between job status queries
+            query_period_seconds=1,  # interval between job status queries
             with_progress_bar=True,  # show a progress bar when waiting for job results
         )
 
