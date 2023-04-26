@@ -10,8 +10,7 @@
 # copyright notice, and modified files need to carry a notice indicating
 # that they have been altered from the originals.
 
-from collections.abc import Mapping
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator, Mapping, Optional
 
 import pydantic as pdt
 from typing_extensions import Annotated, Self
