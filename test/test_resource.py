@@ -29,7 +29,7 @@ from qiskit_aqt_provider.aqt_resource import (
     AQTResource,
     OfflineSimulatorResource,
 )
-from qiskit_aqt_provider.test.circuits import empty_circuit
+from qiskit_aqt_provider.test.circuits import assert_circuits_equal, empty_circuit
 from qiskit_aqt_provider.test.fixtures import MockSimulator
 from qiskit_aqt_provider.test.resources import DummyResource, TestResource
 
@@ -128,6 +128,23 @@ def test_query_period_propagation() -> None:
     lower_bound = math.floor(response_delay / period_seconds)
     upper_bound = math.ceil(response_delay / period_seconds) + 1
     assert lower_bound <= mocked_status.call_count <= upper_bound
+
+
+def test_double_job_submission(offline_simulator_no_noise: MockSimulator) -> None:
+    """Check that attempting to re-submit a job raises a RuntimeError."""
+    qc = QuantumCircuit(1)
+    qc.r(3.14, 0.0, 0)
+    qc.measure_all()
+
+    # AQTResource.run submits the job
+    job = offline_simulator_no_noise.run(qc)
+
+    with pytest.raises(RuntimeError, match=f"{job.job_id()}"):
+        job.submit()
+
+    # Check that the job was actually submitted
+    ((submitted_circuit,),) = offline_simulator_no_noise.submitted_circuits
+    assert_circuits_equal(submitted_circuit, qc)
 
 
 def test_offline_simulator_invalid_api_resource() -> None:

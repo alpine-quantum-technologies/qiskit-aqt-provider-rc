@@ -12,6 +12,7 @@
 
 import abc
 import warnings
+from copy import copy
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
@@ -239,10 +240,26 @@ class AQTResource(Backend):
         return "aqt"
 
     def run(self, circuits: Union[QuantumCircuit, List[QuantumCircuit]], **options: Any) -> AQTJob:
+        """Submit circuits for execution on this resource.
+
+        Additional keywork arguments are treated as overrides for this resource's options.
+        Keywords that are not valid options for this resource are ignored with a warning.
+
+        Args:
+            circuits: circuits to execute
+            options: overrides for this resource's options.
+
+        Returns:
+            A job handle.
+        """
         if not isinstance(circuits, list):
             circuits = [circuits]
 
-        unknown_options = set(options) - set(self.options.__dict__ or {})
+        valid_options = {
+            key: value for key, value in options.items() if key in self.options.__dict__
+        }
+        unknown_options = set(options) - set(valid_options)
+
         if unknown_options:
             for unknown_option in unknown_options:
                 warnings.warn(
@@ -251,10 +268,15 @@ class AQTResource(Backend):
                     stacklevel=2,
                 )
 
-        shots = options.get("shots", self.options.shots)
-        with_progress_bar = options.get("with_progress_bar", self.options.with_progress_bar)
+        options_copy = copy(self.options)
+        options_copy.update_options(**valid_options)
 
-        job = AQTJob(self, circuits, shots, with_progress_bar=with_progress_bar)
+        job = AQTJob(
+            self,
+            circuits,
+            options_copy.shots,
+            with_progress_bar=options_copy.with_progress_bar,
+        )
         job.submit()
         return job
 

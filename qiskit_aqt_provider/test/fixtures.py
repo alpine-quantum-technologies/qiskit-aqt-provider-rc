@@ -23,9 +23,7 @@ from qiskit.circuit import QuantumCircuit
 
 from qiskit_aqt_provider.aqt_provider import AQTProvider
 from qiskit_aqt_provider.aqt_resource import ApiResource, OfflineSimulatorResource
-from qiskit_aqt_provider.circuit_to_aqt import (
-    _qiskit_to_aqt_circuit,
-)
+from qiskit_aqt_provider.circuit_to_aqt import _qiskit_to_aqt_circuit
 
 
 class MockSimulator(OfflineSimulatorResource):
@@ -59,7 +57,7 @@ class MockSimulator(OfflineSimulatorResource):
                 _ = _qiskit_to_aqt_circuit(circuit)
             except Exception as e:  # noqa: BLE001
                 raise ValueError(
-                    "Circuit cannot be converted to AQT JSON format:\n{circuit}"
+                    f"Circuit cannot be converted to AQT JSON format:\n{circuit}"
                 ) from e
 
         self.submit_call_args.append((circuits, shots))

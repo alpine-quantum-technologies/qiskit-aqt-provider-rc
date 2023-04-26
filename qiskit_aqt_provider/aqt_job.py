@@ -92,14 +92,19 @@ class Progress:
     """Total number of circuits in the job."""
 
 
-@dataclass(frozen=True)
+@dataclass
 class _MockProgressBar:
-    """tqdm-compatible progress bar mock."""
+    """Minimal tqdm-compatible progress bar mock."""
+
+    total: int
+    """Total number of items in the job."""
 
     n: int = 0
+    """Number of processed items."""
 
-    def update(self, step: int) -> None:
-        pass
+    def update(self, n: int = 1) -> None:
+        """Update the number of processed items by `n`."""
+        self.n += n
 
     def __enter__(self) -> Self:
         return self
@@ -120,7 +125,7 @@ class AQTJob(JobV1):
     ):
         """Initialize a job instance.
 
-        Parameters:
+        Args:
             backend: backend to run the job on
             circuits: list of circuits to execute
             shots: number of repetitions per circuit
@@ -135,6 +140,14 @@ class AQTJob(JobV1):
         self.status_payload: JobStatusPayload = JobQueued()
 
     def submit(self) -> None:
+        """Submit this job for execution.
+
+        Raises:
+            RuntimeError: this job was already submitted.
+        """
+        if self.job_id():
+            raise RuntimeError(f"Job already submitted (ID: {self.job_id()})")
+
         job_id = self._backend.submit(self.circuits, self.shots)
         self._job_id = str(job_id)
 
@@ -202,7 +215,7 @@ class AQTJob(JobV1):
 
             context: Union[tqdm[NoReturn], _MockProgressBar] = tqdm(total=len(self.circuits))
         else:
-            context = _MockProgressBar()
+            context = _MockProgressBar(total=len(self.circuits))
 
         with context as progress_bar:
 
