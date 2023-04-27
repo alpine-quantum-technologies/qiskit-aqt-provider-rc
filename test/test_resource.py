@@ -23,12 +23,7 @@ from qiskit.providers.exceptions import JobTimeoutError
 
 from qiskit_aqt_provider import api_models
 from qiskit_aqt_provider.aqt_job import AQTJob
-from qiskit_aqt_provider.aqt_provider import AQTProvider
-from qiskit_aqt_provider.aqt_resource import (
-    ApiResource,
-    AQTResource,
-    OfflineSimulatorResource,
-)
+from qiskit_aqt_provider.aqt_resource import AQTResource
 from qiskit_aqt_provider.test.circuits import assert_circuits_equal, empty_circuit
 from qiskit_aqt_provider.test.fixtures import MockSimulator
 from qiskit_aqt_provider.test.resources import DummyResource, TestResource
@@ -147,18 +142,6 @@ def test_double_job_submission(offline_simulator_no_noise: MockSimulator) -> Non
     assert_circuits_equal(submitted_circuit, qc)
 
 
-def test_offline_simulator_invalid_api_resource() -> None:
-    """Check that one cannot instantiate an OfflineSimulatorResource on an API resource
-    that is no offline simulator.
-    """
-    with pytest.raises(ValueError):
-        OfflineSimulatorResource(
-            AQTProvider(""),
-            "default",
-            ApiResource(name="dummy", id="dummy", type="device"),
-        )
-
-
 def test_offline_simulator_invalid_job_id(offline_simulator_no_noise: MockSimulator) -> None:
     """Check that the offline simulator raises UnknownJobError if the job id passed
     to `result()` is invalid.
@@ -196,8 +179,8 @@ def test_submit_valid_response(httpx_mock: HTTPXMock) -> None:
             json=json.loads(
                 api_models.Response.queued(
                     job_id=expected_job_id,
-                    resource_id=backend._resource["id"],
-                    workspace_id=backend._workspace,
+                    resource_id=backend.resource_id,
+                    workspace_id=backend.workspace_id,
                 ).json()
             ),
         )
@@ -228,7 +211,7 @@ def test_result_valid_response(httpx_mock: HTTPXMock) -> None:
     job_id = uuid.uuid4()
 
     payload = api_models.Response.cancelled(
-        job_id=job_id, resource_id=backend._resource["id"], workspace_id=backend._workspace
+        job_id=job_id, resource_id=backend.resource_id, workspace_id=backend.workspace_id
     )
 
     def handle_result(request: httpx.Request) -> httpx.Response:
