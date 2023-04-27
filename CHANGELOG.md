@@ -8,6 +8,7 @@
 * Use server-side multi-circuits jobs API #63
 * Add job completion progress bar #63
 * Implement the `ProviderV1` interface for `AQTProvider` #65
+* Set User-Agent with package and platform information for HTTP requests #65
 
 ## qiskit-aqt-provider v0.12.0
 
