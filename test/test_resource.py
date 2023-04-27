@@ -27,6 +27,7 @@ from qiskit_aqt_provider.aqt_resource import AQTResource
 from qiskit_aqt_provider.test.circuits import assert_circuits_equal, empty_circuit
 from qiskit_aqt_provider.test.fixtures import MockSimulator
 from qiskit_aqt_provider.test.resources import DummyResource, TestResource
+from qiskit_aqt_provider.versions import USER_AGENT
 
 
 def test_options_set_query_timeout(offline_simulator_no_noise: AQTResource) -> None:
@@ -171,7 +172,7 @@ def test_submit_valid_response(httpx_mock: HTTPXMock) -> None:
     expected_job_id = uuid.uuid4()
 
     def handle_submit(request: httpx.Request) -> httpx.Response:
-        assert request.headers["sdk"] == "qiskit"
+        assert request.headers["user-agent"] == USER_AGENT
         assert request.headers["authorization"] == f"Bearer {token}"
 
         return httpx.Response(
@@ -215,7 +216,7 @@ def test_result_valid_response(httpx_mock: HTTPXMock) -> None:
     )
 
     def handle_result(request: httpx.Request) -> httpx.Response:
-        assert request.headers["sdk"] == "qiskit"
+        assert request.headers["user-agent"] == USER_AGENT
         assert request.headers["authorization"] == f"Bearer {token}"
 
         return httpx.Response(status_code=httpx.codes.OK, json=json.loads(payload.json()))
