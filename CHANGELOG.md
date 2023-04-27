@@ -9,6 +9,8 @@
 * Add job completion progress bar #63
 * Allow overriding any backend option in `AQTResource.run` #64
 * Only return raw memory data when the `memory` option is set #64
+* Implement the `ProviderV1` interface for `AQTProvider` #65
+* Set User-Agent with package and platform information for HTTP requests #65
 
 ## qiskit-aqt-provider v0.12.0
 
