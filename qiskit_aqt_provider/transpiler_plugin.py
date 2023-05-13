@@ -40,7 +40,7 @@ def bound_pass_manager(target: Target) -> PassManager:
     """Transpilation passes to apply on circuits after the parameters are bound.
 
     This assumes that a preset pass manager was applied to the unbound circuits
-    (by setting the target to an instance of `UnboundParametersTarget`.
+    (by setting the target to an instance of `UnboundParametersTarget`).
 
     Args:
         target: transpilation target.
