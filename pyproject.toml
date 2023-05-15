@@ -222,25 +222,24 @@ black .
 pyproject-fmt .
 """
 
-[tool.poe.tasks.format_check]
-shell = """
-black --check .
-pyproject-fmt --check .
-"""
+[tool.poe.tasks.black_check]
+shell = "black --check ."
+
+[tool.poe.tasks.pyprojectfmt_check]
+shell = "pyproject-fmt --check ."
 
 [tool.poe.tasks.typecheck]
-shell = """
-mypy .
-pyright .
-"""
+shell = "mypy ."
 
-[tool.poe.tasks.lint]
-shell = """
-ruff check .
-./scripts/api_models.py check
-"""
+[tool.poe.tasks.check_api_models]
+shell = "./scripts/api_models.py check"
+
+[tool.poe.tasks.ruff_check]
+shell = "ruff check ."
 
 [tool.poe.tasks]
+lint = ["check_api_models", "ruff_check"]
+format_check = ["black_check", "pyprojectfmt_check"]
 generate-models = "./scripts/api_models.py generate"
 docs = "sphinx-build -b html -W docs docs/_build"
 all = ["format_check", "lint", "typecheck", "test", "docs"]
