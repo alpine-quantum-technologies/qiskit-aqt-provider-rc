@@ -17,6 +17,7 @@ expected.
 """
 
 import re
+import typing
 from collections import Counter
 from fractions import Fraction
 from math import pi
@@ -145,7 +146,7 @@ def test_simple_backend_execute_noisy(backend: MockSimulator) -> None:
     shots = 200  # maximum shots per submission
     assert total_shots % shots == 0
 
-    counts: Counter[str] = Counter()
+    counts: typing.Counter[str] = Counter()
     for _ in range(total_shots // shots):
         job = qiskit.execute(qc, backend=backend, shots=shots)
         counts += Counter(job.result().get_counts())
