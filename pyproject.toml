@@ -42,12 +42,13 @@ aqt = "qiskit_aqt_provider.transpiler_plugin:AQTTranslationPlugin"
 pytest_qiskit_aqt = "qiskit_aqt_provider.test.fixtures"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<4.0"
 
 httpx = ">=0.24.0"
 pydantic = ">=1.10.8,<2"
 python-dotenv = ">=1"
 qiskit-aer = ">=0.11"
+qiskit-experiments = { version = ">=0.4.0,<0.5.0", optional = true }  # >=0.5 has transpilation issues
 qiskit-terra = ">=0.23.3,<0.24.0"
 tabulate = ">=0.9.0"
 tqdm = ">=4"
@@ -71,7 +72,6 @@ pyright = "=1.1.308"
 pytest = ">=7"
 pytest-httpx = "^0.22.0"
 pytest-sugar = "^0.9.6"
-qiskit-experiments = "^0.4.0"
 qiskit-sphinx-theme = ">=1.7.0"
 qiskit-terra = {version = ">=0.23.2", extras = ["visualization"]}
 ruff = "^0.0.267"
@@ -85,7 +85,8 @@ types-tqdm = "^4.65.0.1"
 
 [tool.poetry.extras]
 examples = [
-    "tweedledum"
+    "qiskit-experiments",
+    "tweedledum",
 ]
 
 [build-system]
