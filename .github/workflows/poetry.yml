@@ -34,12 +34,17 @@ jobs:
       - name: Install main dependencies
         run: |
           poetry run pip install coverage[toml]
+          poetry install --only main
+      - name: Install examples dependencies
+        run: |
           poetry install --only main --extras examples
+        # tweedledum has no wheel for Python3.11 and the build errors
+        if: matrix.python-version != '3.11'
       - name: Run examples
         run: |
           poetry run examples/run_all.sh -c
       - name: Install all dependencies
-        run: poetry install --all-extras --sync
+        run: poetry install --sync
       - name: Check formatting
         run: poetry run poe format_check
       - name: Linting
