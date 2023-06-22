@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Set default portal url to `https://arnica-stage.aqt.eu` #79
+
 ## qiskit-aqt-provider v0.14.0
 
 * Add `AQTEstimator`, a specialized implementation of the `Estimator` primitive #71
