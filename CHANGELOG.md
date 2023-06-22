@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## qiskit-aqt-provider v0.15.0
+
 * Set default portal url to `https://arnica-stage.aqt.eu` #79
 
 ## qiskit-aqt-provider v0.14.0
