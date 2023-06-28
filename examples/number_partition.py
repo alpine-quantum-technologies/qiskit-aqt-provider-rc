@@ -78,7 +78,7 @@ def solve_partition_problem(num_set: Set[int]) -> Union[Success, Infeasible]:
 
 
 if __name__ == "__main__":
-    backend = AQTProvider().get_backend("offline_simulator_no_noise")
+    backend = AQTProvider("token").get_backend("offline_simulator_no_noise")
 
     # fix the random seeds such that the example is reproducible
     algorithm_globals.random_seed = RANDOM_SEED
