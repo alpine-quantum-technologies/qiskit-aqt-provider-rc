@@ -22,7 +22,7 @@ from qiskit.utils import algorithm_globals
 
 from qiskit_aqt_provider import AQTProvider
 from qiskit_aqt_provider.aqt_resource import OfflineSimulatorResource
-from qiskit_aqt_provider.primitives.estimator import AQTEstimator
+from qiskit_aqt_provider.primitives import AQTEstimator
 
 RANDOM_SEED: Final = 0
 
