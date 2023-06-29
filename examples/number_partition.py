@@ -12,7 +12,7 @@
 
 """Simple number partition problem solving.
 
-This example shows how to use solve problems covered by the application
+This example shows how to solve problems covered by the application
 domains in the qiskit_optimization package.
 
 Number partition: given a set of positive integers, determine whether

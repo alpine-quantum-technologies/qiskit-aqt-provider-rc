@@ -39,7 +39,7 @@ if __name__ == "__main__":
     J = 1.23456789
     hamiltonian = SparsePauliOp.from_list([("ZZ", 3 * J)])
 
-    # Find the ground-state energy with VQE
+    # Find the ground-state energy with QAOA
     optimizer = COBYLA(maxiter=100, tol=0.01)
     qaoa = QAOA(sampler, optimizer)
     result = qaoa.compute_minimum_eigenvalue(operator=hamiltonian)
