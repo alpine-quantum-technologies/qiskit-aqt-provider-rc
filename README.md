@@ -1,3 +1,7 @@
+# This repository is archived (2023-09-26)
+
+The Qiskit AQT provider repository is now at [qiskit-community/qiskit-aqt-provider](https://github.com/qiskit-community/qiskit-aqt-provider). The released packages are available on PyPI as [qiskit-aqt-provider](https://pypi.org/project/qiskit-aqt-provider/).
+
 # Qiskit AQT Provider
 
 [![Latest release](https://img.shields.io/pypi/v/qiskit-aqt-provider-rc.svg)](https://pypi.python.org/pypi/qiskit-aqt-provider-rc)
